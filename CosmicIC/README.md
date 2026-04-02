@@ -7,7 +7,7 @@ It runs in parallel using MPI. Access is needed. Not open-source. The steps are 
 
 
 1. First, we need to get the transfer function by running the `class` code. See the README in
-[ForNyx](https://github.com/nataraj2/class_public/tree/master)
+[ForNyx](https://github.com/nataraj2/class_public/tree/master/ForNyx).
 
 Dependenices: fftw library
  
