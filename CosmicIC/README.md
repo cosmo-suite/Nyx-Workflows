@@ -1,4 +1,6 @@
 # How to generate initial conditions for Nyx using the CosmicIC repo
+Dependenices: fftw library
+
 The CosmicIC repository generates the initial dark matter particle positions consistent 
 with the overdensity spectrum at a specified redshift. The transfer function used to 
 generate the spectrum is in a file `cmb.tf` in the repo. The input file `input.par` 
@@ -7,10 +9,7 @@ It runs in parallel using MPI. Access is needed. Not open-source. The steps are 
 
 
 1. First, we need to get the transfer function by running the `class` code. See the README in
-[ForNyx](https://github.com/nataraj2/class_public/tree/master/ForNyx).
-
-Dependenices: fftw library
- 
+[ForNyx](https://github.com/nataraj2/class_public/tree/master/ForNyx). 
 2. `git clone https://maheshnatarajan@bitbucket.org/zarija/cosmicic.git` (access needed)  
 3. `cd cosmicic`
 4. `make -j8`
