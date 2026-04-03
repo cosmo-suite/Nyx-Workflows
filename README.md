@@ -5,9 +5,16 @@ cosmology. [Nyx](https://github.com/AMReX-Astro/Nyx) is an open-source code base
 The different test cases are in the [Exec](https://github.com/AMReX-Astro/Nyx/tree/development/Exec) directory. This repository 
 contains some instructions of how to run these test cases. Here is what the individual directories in this repository contain
 
-1. [CosmicIC](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/CosmicIC) - generating initial conditions for the dark matter particles. Required by all simulations.
-2. `LyA` - Dark matter particles with baryonic matter simulations for Lyman alpha.
-3. `HaloFinder` - Dark matter particles simulations for writing lightcones and halos for dark matter simulations
-4. `Gimlet` - post processing Nyx data
+## Step 1
+See the README in [CosmicIC](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/CosmicIC) - generating initial conditions for the dark matter particles. Required by all simulations.
+
+## Step 2
+See the README in [LyA](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/LyA) -for how to run [Nyx](https://github.com/AMReX-Astro/Nyx) simulation with dark matter particles with baryonic matter simulations for Lyman alpha test case.
+
+## For runs with halos and lightcone writing
+[HaloFinder](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/HaloFinder) - Dark matter particles simulations for writing lightcones and halos for dark matter simulations
+
+## Post-processing Nyx data
+[Gimlet](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/Gimlet) - post processing Nyx data
 
 These are not end-to-end details. But inputs, makefiles and scripts on Perlmutter and Frontier.
