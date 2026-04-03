@@ -11,7 +11,7 @@ See the README in [CosmicIC](https://github.com/cosmo-suite/NyxCompilationAndRun
 
 ## Step 2
 Run the Nyx simulation.   
-See the README in [LyA](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/LyA) -for how to run [Nyx](https://github.com/AMReX-Astro/Nyx) simulation with dark matter particles with baryonic matter simulations for Lyman alpha test case.
+See the README in [LyA](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/LyA) for how to run [Nyx](https://github.com/AMReX-Astro/Nyx) simulation with dark matter particles with baryonic matter simulations for Lyman alpha test case.
 
 ## For runs with halos and lightcone writing
 [HaloFinder](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/HaloFinder) - Dark matter particles simulations for writing lightcones and halos for dark matter simulations
