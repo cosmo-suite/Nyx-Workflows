@@ -7,7 +7,7 @@ contains some instructions of how to run these test cases. Here is what the indi
 
 ## Step 1 
 Generating initial conditions for the dark matter particles - required by all simulations.  
-See the README in [CosmicIC](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/CosmicIC) 
+See the README in [CosmicIC](https://github.com/cosmo-suite/NyxCompilationAndRunning/tree/main/CosmicIC). 
 
 ## Step 2
 Run the Nyx simulation.   
