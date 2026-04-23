@@ -14,4 +14,5 @@ To use the Gimlet code to compute the power spectrum, first the plotfile has to 
 2. `make -j8`
 3. `mpirun -n <nranks> matter_pk.ex <hdf5-file> <spectrum.txt>`
 
-The spectrum.txt file contains 4 colmuns - the first is the wavenumber in units `h/Mpc` and the fourth is the power spectra in $ \left(\frac{\mathrm{Mpc}}{h}\right)^3 $
+The spectrum.txt file contains 4 colmuns - the first is the wavenumber in units `h/Mpc` and the fourth is the power spectra in
+$\frac{\partial\rho}{\partial t} = -\frac{1}{\alpha(t) V}\int\limits_{\partial\Omega(t)}\rho\mathbf{u}\cdot\mathbf{n} \ dA$
