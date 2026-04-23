@@ -21,6 +21,6 @@ This tool reads Nyx plotfile data and writes it into a single HDF5 file for easi
 
 # Compute power spectrum
 
-1. Go to the Gimlet code for power spectrum - `gimlet2/apps/matter\_pk`.
+1. Go to the Gimlet code for power spectrum - `gimlet2/apps/matter_pk`.
 2. `make -j8`
 3. `mpirun -n <nranks> matter_pk.ex <hdf5-file> <spectrum.txt>` 
