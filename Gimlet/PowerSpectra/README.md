@@ -9,7 +9,7 @@ To use the Gimlet code to compute the power spectrum, first the plotfile has to 
 ## Usage
 Run the converter
 ```
-./convert3d.gnu.x86-milan.PROF.MPI.ex input\_path=<nyx-plotfile> output\_path=<hdf5-filename>.h5
+./convert3d.gnu.x86-milan.PROF.MPI.ex input_path=<nyx-plotfile> output_path=<hdf5-filename>.h5
 ```
 
 ## Description
