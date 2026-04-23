@@ -1,4 +1,3 @@
-```markdown
 To use the Gimlet code to compute the power spectrum, first the plotfile has to be converted to hdf5 format using the Nyx ultility.
 
 # Nyx Plotfile to HDF5 Conversion
