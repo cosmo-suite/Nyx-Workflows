@@ -12,4 +12,6 @@ To use the Gimlet code to compute the power spectrum, first the plotfile has to 
 
 1. Go to the Gimlet code for power spectrum - `gimlet2/apps/matter_pk`.
 2. `make -j8`
-3. `mpirun -n <nranks> matter_pk.ex <hdf5-file> <spectrum.txt>` 
+3. `mpirun -n <nranks> matter_pk.ex <hdf5-file> <spectrum.txt>`
+
+The spectrum.txt file contains 4 colmuns - the first is the wavenumber in units `h/Mpc` and the fourth is the power spectra in `$(Mpc/h)^3$`
