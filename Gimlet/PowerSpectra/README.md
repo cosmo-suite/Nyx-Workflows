@@ -3,22 +3,11 @@ To use the Gimlet code to compute the power spectrum, first the plotfile has to 
 # 1. Nyx Plotfile to HDF5 Conversion
 
 1. Go to the Plotfile2HDF5 converter: [Plotfile2HDF5_grids](https://github.com/AMReX-Astro/Nyx/tree/development/Util/Converters/Plotfile2HDF5_grids)
-
 2. `make -j8`
-
-## Usage
-Run the converter
+3. Run the converter
 ```
 ./convert3d.gnu.x86-milan.PROF.MPI.ex input_path=<nyx-plotfile> output_path=<hdf5-filename>.h5
 ```
-
-## Description
-
-- `input_path` : Path to the Nyx plotfile directory  
-- `output_path` : Output HDF5 file name  
-
-This tool reads Nyx plotfile data and writes it into a single HDF5 file for easier post-processing and analysis.
-
 # 2. Compute Power Spectrum
 
 1. Go to the Gimlet code for power spectrum - `gimlet2/apps/matter_pk`.
