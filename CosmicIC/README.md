@@ -11,8 +11,8 @@ specifies all the required parameters for generating the initial particle locati
 It runs in parallel using MPI. Access is needed. Not open-source. The steps are as below.
 
 
-1. First, the transfer function by running the `class` code. See the README in
-[How to run CLASS](https://github.com/nataraj2/class_public/tree/master/ForNyx). 
+1. First, get the transfer function for generating the power spectrum by running the 
+`class` code. See the README in [How to run CLASS](https://github.com/nataraj2/class_public/tree/master/ForNyx). 
 2. `git clone https://maheshnatarajan@bitbucket.org/zarija/cosmicic.git` (access needed)  
 3. `cd cosmicic`
 4. `make -j8`
