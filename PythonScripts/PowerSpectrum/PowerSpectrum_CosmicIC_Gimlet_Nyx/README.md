@@ -1,6 +1,6 @@
 # Compare the power spectrum output by CosmicIC, Gimlet and Nyx
 
-Pre-requisite: The [CosmicIC](https://github.com/cosmo-suite/Nyx-Workflows/tree/main/PythonScripts/PowerSpectrum_CosmicIC) and [Gimlet](https://github.com/cosmo-suite/Nyx-Workflows/tree/main/Gimlet/PowerSpectra) have to be run.
+Pre-requisite: The [CosmicIC](https://github.com/cosmo-suite/Nyx-Workflows/tree/main/PythonScripts/PowerSpectrum/PowerSpectrum_CosmicIC) and [Gimlet](https://github.com/cosmo-suite/Nyx-Workflows/tree/main/Gimlet/PowerSpectra) have to be run.
 
 This script plots and compares power spectra across CosmicIC, Gimlet, and Nyx spectra outputs.
 
