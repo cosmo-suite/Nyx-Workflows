@@ -1,7 +1,7 @@
 # How to generate initial conditions for Nyx using the CosmicIC repo
 Dependenices: fftw library
 
-Pre-requisite: The CLASS code to generate the transfer function has to be run prior to    
+Pre-requisite: The CLASS code to generate the transfer function has to be run prior to 
 running the CosmicIC code.
 
 The CosmicIC repository generates the initial dark matter particle positions consistent 
