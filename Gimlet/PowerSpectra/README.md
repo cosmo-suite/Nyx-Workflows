@@ -1,3 +1,5 @@
+Pre-requisite: THe Gimlet code has to be compiled. See [Compilation](/pscratch/sd/n/nataraj2/Nyx/cosmo-suite/Nyx-Workflows/Gimlet/Compilation).
+
 To use the Gimlet code to compute the power spectrum, first the plotfile has to be converted to hdf5 format using the Nyx ultility.
 
 # 1. Nyx Plotfile to HDF5 Conversion
