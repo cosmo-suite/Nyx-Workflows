@@ -1,6 +1,6 @@
 # Compute matter power spectrum using the Gimlet code
 
-Pre-requisite: THe Gimlet code has to be compiled. See [Compilation](/pscratch/sd/n/nataraj2/Nyx/cosmo-suite/Nyx-Workflows/Gimlet/Compilation).
+Pre-requisite: The Gimlet code has to be compiled. See [Compilation](/pscratch/sd/n/nataraj2/Nyx/cosmo-suite/Nyx-Workflows/Gimlet/Compilation).
 
 To use the Gimlet code to compute the power spectrum, first the Nyx plotfile has to be converted to hdf5 format using the Nyx ultility.
 
