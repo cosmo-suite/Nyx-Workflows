@@ -1,14 +1,14 @@
 # How to generate initial conditions for Nyx using the CosmicIC repo
 Dependenices: fftw library
 
-Pre-requisite: The CLASS code to generate the transfer function has to be run prior to 
-running the CosmicIC code.
+Pre-requisite: The CLASS code (open-source) to generate the transfer function has to be run prior to 
+running the CosmicIC code (access needed).
 
 The CosmicIC repository generates the initial dark matter particle positions consistent 
 with the overdensity spectrum at a specified redshift. The transfer function used to 
 generate the spectrum is obtained by running the CLASS code. The input file `input.par` 
 specifies all the required parameters for generating the initial particle locations. 
-It runs in parallel using MPI. Access is needed. Not open-source. The steps are as below.
+It runs in parallel using MPI. The steps are as below.
 
 
 1. Run the CLASS code to get the transfer function for generating the power spectrum. See 
