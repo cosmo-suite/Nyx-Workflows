@@ -127,12 +127,25 @@ def main():
             linestyle='-'
         )
 
+
+    # 2. Add a single reference line for the shot noise floor
+    P_shot = 0.00002422583
+    plt.loglog(
+        k_nyx / args.h,
+        k_nyx**3 * P_shot / (2.0 * np.pi**2),
+        color='gray',
+        linestyle=':',
+        label='Poisson shot noise $V/N_p$'
+    )
+
+
+
     # -------------------------
     # Plot styling
     # -------------------------
     plt.xlabel(r"$k\ [h\,\mathrm{Mpc}^{-1}]$")
     plt.ylabel(r"$k^3 P(k)\ / (2 \pi^2)$")
-    plt.legend(loc="lower left")
+    plt.legend(loc="upper left")
     plt.grid(True, which="both", ls="--", alpha=0.5)
     plt.ylim([1e-10, 5000.0])
 
