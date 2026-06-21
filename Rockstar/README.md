@@ -10,7 +10,7 @@
 This will produce the executable named `rockstar-galaxies`.
 
 To run examples of halo finding with Rockstar, go into one of the example folders in 
-`rockstar_example` - `Example1`, `Example 2` or `Example3` and do the following
+`rockstar_example` - `Example1`, `Example 2` or `Example3` and do the following.  
 4. Compile and run to generate particle snapshot
 ```
 mpicxx -std=c++14 main.cpp -o out
