@@ -34,4 +34,6 @@ where `<.bin file>` and `<.rbin file>` are from Step 5. This will write individu
 for all the particles in the domain.
 
 ## Example3 output
-![all_particles](rockstar_examples/Example3/Images/all_particles.png)
+<p align="center">
+  <img src="rockstar_examples/Example3/Images/all_particles.png" width="600">
+</p>
