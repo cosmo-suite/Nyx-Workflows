@@ -31,5 +31,5 @@ To visualize all the particles and the halo particles, `.vtk` files can be writt
 9. ./out <.bin file> <.rbin file> <output-dir-for-vtk-files>
 ```
 where `<.bin file>` and `<.rbin file>` are from Step 5. This will write individual `.vtk` files for each of the halo produced and a `all_particles.vtk` file 
-for all the particles in the domain
+for all the particles in the domain.
 
