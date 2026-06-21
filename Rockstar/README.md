@@ -34,6 +34,23 @@ where `<.bin file>` and `<.rbin file>` are from Step 5. This will write individu
 for all the particles in the domain.
 
 ## Example3 output
+
+## Example3 output
+
+<table>
+<tr>
+<td align="center">
+<img src="rockstar_examples/Example3/Images/all_particles.png" width="300"><br>
+<b>(a)</b> All particles in the simulation volume.
+</td>
+
+<td align="center">
+<img src="rockstar_examples/Example3/Images/halo_particles.png" width="300"><br>
+<b>(b)</b> Particles identified as belonging to the halo.
+</td>
+</tr>
+</table>
+
 <p align="center">
-  <img src="rockstar_examples/Example3/Images/all_particles.png" width="300">
+<i>Figure:</i> Rockstar successfully identifies the overdense halo and assigns particles to the halo catalog.
 </p>
