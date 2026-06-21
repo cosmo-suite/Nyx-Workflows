@@ -17,7 +17,7 @@ mpicxx -std=c++14 main.cpp -o out
 ./out
 ```
 This will generate a binary file in gadget format containing the particles.  
-5. `./rockstar-galaxies -c rockstar.cfg <particle-gadget-file>`  
+5. `./rockstar-galaxies -c rockstar.cfg <particle-gadget-file>`    
 where `<particle-gadget-file>` is the output file produced in step 4. This will produce a folder named 
 `halos` with 
 - `.ascii` file which contains information of the halos,
