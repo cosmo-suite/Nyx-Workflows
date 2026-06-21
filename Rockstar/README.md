@@ -1,9 +1,9 @@
 # Rockstar for halo identification and mergers
 
-1. Clone the Rockstar repository
+1. Clone the Rockstar repository and compile
 
 ```
-git clone https://bitbucket.org/pbehroozi/rockstar-galaxies.git
+1. git clone https://bitbucket.org/pbehroozi/rockstar-galaxies.git
 2. cd rockstar-galaxies
 3. make -j8
 ```
