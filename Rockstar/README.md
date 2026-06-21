@@ -35,5 +35,5 @@ for all the particles in the domain.
 
 ## Example3 output
 <p align="center">
-  <img src="rockstar_examples/Example3/Images/all_particles.png" width="600">
+  <img src="rockstar_examples/Example3/Images/all_particles.png" width="300">
 </p>
