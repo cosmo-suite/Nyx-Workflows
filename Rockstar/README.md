@@ -4,9 +4,9 @@
 
 ```
 git clone https://bitbucket.org/pbehroozi/rockstar-galaxies.git
+2. cd rockstar-galaxies
+3. make -j8
 ```
-2. `cd rockstar-galaxies`
-3. `make -j8`
 This will produce the executable named `rockstar-galaxies`.
 
 To run examples of halo finding with Rockstar, go into one of the example folders in 
