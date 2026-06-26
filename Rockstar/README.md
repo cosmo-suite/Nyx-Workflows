@@ -42,12 +42,12 @@ This shows the result of executing the above pipeline for `rockstar_examples/Bac
 <table>
 <tr>
 <td align="center">
-<img src="rockstar_examples/BackgndWithTwoHalo/Images/all_particles.png" width="300"><br>
+<img src="rockstar_examples/Serial/BackgndWithTwoHalo/Images/all_particles.png" width="300"><br>
 <b>(a)</b> All particles in the simulation volume.
 </td>
 
 <td align="center">
-<img src="rockstar_examples/BackgndWithTwoHalo/Images/halo_particles.png" width="300"><br>
+<img src="rockstar_examples/Serial/BackgndWithTwoHalo/Images/halo_particles.png" width="300"><br>
 <b>(b)</b> Particles identified as belonging to the halo.
 </td>
 </tr>
