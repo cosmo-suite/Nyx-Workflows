@@ -89,7 +89,7 @@ std::string gadget_files_dir;
             << "Usage: " << argv[0]
             << " --properties=<prop-file>"
             << " --catalog-groups=<catalog_groups-file>"
-            << " --catalog-particles=<catalog_particles-file>\n";
+            << " --catalog-particles=<catalog_particles-file>\n"
             << " --gadget-files-dir=<gadget-files-dir>\n";
         return EXIT_FAILURE;
     }
