@@ -8,12 +8,25 @@ LDFLAGS = -L$(HDF5_LIB)
 LDLIBS = -lhdf5
 
 TARGET = halo_reader
-SRC = main.cpp
+
+SRC = \
+	main.cpp \
+	PropertyFileReader.cpp \
+	GroupFileReader.cpp \
+	ParticleFileReader.cpp \
+	GadgetFileReader.cpp
+
+OBJ = $(SRC:.cpp=.o)
 
 all: $(TARGET)
 
-$(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) -I$(HDF5_INC) $^ -o $@ $(LDFLAGS) $(LDLIBS)
+$(TARGET): $(OBJ)
+	$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(LDLIBS)
+
+%.o: %.cpp VelociraptorOutputReader.H GadgetFileReader.H
+	$(CXX) $(CXXFLAGS) -I$(HDF5_INC) -c $< -o $@
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(OBJ)
+
+.PHONY: all clean
