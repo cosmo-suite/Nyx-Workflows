@@ -10,17 +10,14 @@
 
 #define GADGET_HEADER_SIZE 256
 
-#include <fstream>
-#include <iostream>
 #include <vector>
 #include <bit> // Required for std::byteswap (C++20)
 
-
-#include <fstream>
-#include <iostream>
-#include <vector>
+#include <filesystem>
 #include <iomanip>
 #include <sstream>
+
+namespace fs = std::filesystem;
 
 // Runtime check for little endianness
 static inline bool is_little_endian() 
@@ -395,8 +392,14 @@ int main()
         hdr.flag_metals       = 0;
         hdr.flag_entropy_ics  = 0;
 
+        // Create directory if it doesn't exist
+        fs::create_directories("GadgetFilesSnapshot");
+
         std::ostringstream filename;
-        filename << BaseName << "." << std::setw(3) << std::setfill('0') << SnapshotNum << "." << b;
+        filename << "GadgetFilesSnapshot/"
+         << BaseName << "."
+         << std::setw(3) << std::setfill('0') << SnapshotNum
+         << "." << b;
 
         std::ofstream out(filename.str(), std::ios::binary);
 

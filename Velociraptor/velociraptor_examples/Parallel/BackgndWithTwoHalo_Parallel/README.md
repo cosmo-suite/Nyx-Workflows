@@ -12,5 +12,5 @@ This section describes how to run rockstar in client-server on Perlmutter (NERSC
 3. Get an interactive node on a terminal (say terminal 1)
 4. Get another terminal (terminal 2) of the interactive node by doing  
 `ssh <nodeid>`
-5. `./stf -i my_sim.000 -s 8 -I 1 -o halos_test -C test.cfg`
+5. `./stf -i GadgetFilesSnapshot/my_sim.000 -s 8 -I 1 -o halos_test -C test.cfg`
 6. `h5dump -d Mass_tot halos_test.properties.0`
