@@ -1,4 +1,4 @@
-# mpi-rockstar for halo identification and mergers for a small test case
+# mpi-rockstar for halo identification for a small test case
 
 Note: The mpi-rockstar code works only with OpenMPI and not MPICH.
 
