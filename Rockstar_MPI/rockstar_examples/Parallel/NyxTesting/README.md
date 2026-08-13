@@ -11,10 +11,10 @@ Note: The mpi-rockstar code works only with OpenMPI and not MPICH.
 ```
 This will produce the executable named `mpi-rockstar` in the mpi-rockstar directory.
 
-To run examples of halo finding with Rockstar, go into one of the example folders in 
-`rockstar_example` - `rockstar_examples/Parallel`
+4. To run mpi-rockstar fo Nyx snaphosts, 
+`cd rockstar_examples/Parallel/NyxTesting`
 
-4. Create a .cfg file like the ones provided in this folder
+5. Create a .cfg file like the ones provided in this folder
 ```
 INBASE = <directory-containing-gadget-files>
 FILENAME = "nyx_snapshot.<snap>.<block>"
@@ -40,7 +40,7 @@ For example `halo_0.10.bin` files will contain the locations of all the particle
 
 ## Nyx-mpi-rockstar halo output
 
-This shows the result of executing the above pipeline for Nyx a snapshot with $$256^3$$ particles at a redshift of `z=2.0` on a 20 Mpc/h simulation domain.
+The image below shows the result of executing the above pipeline for a Nyx snapshot with $$256^3$$ particles at a redshift of `z=2.0` on a 20 Mpc/h simulation domain.
 
 <div align="center">
 
