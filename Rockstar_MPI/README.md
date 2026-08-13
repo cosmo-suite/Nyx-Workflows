@@ -40,7 +40,7 @@ For example `halo_0.10.bin` files will contain the locations of all the particle
 
 ## Nyx-mpi-rockstar halo output
 
-This shows the result of executing the above pipeline for Nyx a snapshot with 256$3^$ particles at a redshift of `z=2.0` on a 20 Mpc/h simulation domain.
+This shows the result of executing the above pipeline for Nyx a snapshot with $$256^3$$ particles at a redshift of `z=2.0` on a 20 Mpc/h simulation domain.
 
 <div align="center">
 
