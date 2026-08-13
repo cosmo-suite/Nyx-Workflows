@@ -1,4 +1,4 @@
-# mpi-rockstar for halo identification and mergers
+# mpi-rockstar for halo identification and mergers for Nyx simulations
 
 Note: The mpi-rockstar code works only with OpenMPI and not MPICH.
 
@@ -7,7 +7,7 @@ Note: The mpi-rockstar code works only with OpenMPI and not MPICH.
 ```
 1. git clone https://github.com/Tomoaki-Ishiyama/mpi-rockstar.git
 2. cd mpi-rockstar/src
-3. make mpi-rockstar
+3. make -j8 mpi-rockstar
 ```
 This will produce the executable named `mpi-rockstar` in the mpi-rockstar directory.
 
