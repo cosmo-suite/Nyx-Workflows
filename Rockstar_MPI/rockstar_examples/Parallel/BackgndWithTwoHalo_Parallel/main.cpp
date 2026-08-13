@@ -182,6 +182,7 @@ constexpr double   Center1Z    = 2.0;
 // Halo #2
 constexpr uint64_t Nhalo2      = 5e3*fac;
 constexpr double   HaloRadius2 = 0.5;
+
 constexpr double   Center2X    = 7.0;
 constexpr double   Center2Y    = 7.0;
 constexpr double   Center2Z    = 7.0;
