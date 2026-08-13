@@ -38,8 +38,7 @@ make -j8
 ```
 For example `halo_0.10.bin` files will contain the locations of all the particles of all halos with center in the processor with rank 10. The above  will write each of those halos into a separte `.vtk` file that can be visualized in ParaView.
 
-```
-## `Nyx_mpi-rockstar` halo output
+## Nyx-mpi-rockstar halo output
 
 This shows the result of executing the above pipeline for Nyx a snapshot with 256$3^$ particles at a redshift of `z=2.0` on a 20 Mpc/h simulation domain.
 
