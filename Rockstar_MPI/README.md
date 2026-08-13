@@ -44,7 +44,7 @@ This shows the result of executing the above pipeline for Nyx a snapshot with 25
 
 <div align="center">
 
-<img src="./Images/Nyx_mpi-rockstar_256_halos.png" width="500"><br>
+<img src="./Images/Nyx_mpi-rockstar_256_halos.png" width="800"><br>
 
 <i>Figure 3:</i> Halos identified by mpi-rockstar for a redshift of `z=2` snapshot on a 20 Mpc/h simulation domain.
 
