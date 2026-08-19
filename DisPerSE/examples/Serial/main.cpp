@@ -25,29 +25,10 @@
 
 #include "NDfield.h"
 
-// ============================================================
-// Main
-// ============================================================
-
-int main()
+void 
+CreateField(const double Lx, const double Ly, const double Lz,
+                 const int nx, const int ny, const int nz, NDfield& field) 
 {
-    // ========================================================
-    // Physical domain
-    // ========================================================
-
-    const double Lx = 20.0;
-    const double Ly = 20.0;
-    const double Lz = 20.0;
-
-
-    // ========================================================
-    // Grid dimensions
-    // ========================================================
-
-    const int nx = 128;
-    const int ny = 128;
-    const int nz = 128;
-
 
     // ========================================================
     // Total number of grid cells
@@ -70,13 +51,6 @@ int main()
     const double dx = Lx / nx;
     const double dy = Ly / ny;
     const double dz = Lz / nz;
-
-
-    // ========================================================
-    // Create NDfield
-    // ========================================================
-
-    NDfield field;
 
     // Initialize entire structure to zero.
     std::memset(&field, 0, sizeof(NDfield));
@@ -399,7 +373,36 @@ for (int k = 0; k < nz; ++k)
         std::cout << std::setprecision(12)
                   << data[i] << "\n";
     }
+}
+                 
 
+// ============================================================
+// Main
+// ============================================================
+
+int main()
+{
+
+    // ========================================================
+    // Physical domain
+    // ========================================================
+
+    const double Lx = 20.0;
+    const double Ly = 20.0;
+    const double Lz = 20.0;
+
+
+    // ========================================================
+    // Grid dimensions
+    // ========================================================
+
+    const int nx = 128;
+    const int ny = 128;
+    const int nz = 128;
+
+
+    NDfield field;
+    CreateField(Lx, Ly, Lz, nx, ny, nz, field);
 
     // ========================================================
     // Write NDfield file
@@ -410,11 +413,6 @@ for (int k = 0; k < nz; ++k)
     int err = WriteNDfield(filename, &field);
 
     WriteNDfieldToVTK("random_density.vtk", field, "density");
-    // ========================================================
-    // Clean up
-    // ========================================================
-
-    delete[] data;
 
     field.val = nullptr;
 
