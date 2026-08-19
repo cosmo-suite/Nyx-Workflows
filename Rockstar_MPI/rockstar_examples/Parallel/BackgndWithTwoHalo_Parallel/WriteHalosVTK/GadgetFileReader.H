@@ -62,7 +62,6 @@ void read_block(std::ifstream& in,
     in.read(reinterpret_cast<char*>(&block_size_begin),
             sizeof(uint32_t));
 
-
     size_t n = block_size_begin / sizeof(T);
 
     data.resize(n);
@@ -84,5 +83,24 @@ void read_block(std::ifstream& in,
     }
 }
 
+template <typename T>
+void write_be(std::ofstream& out, T value)
+{
+    unsigned char bytes[sizeof(T)];
+    std::memcpy(bytes, &value, sizeof(T));
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    std::reverse(bytes, bytes + sizeof(T));
+#endif
+
+    out.write(reinterpret_cast<char*>(bytes), sizeof(T));
+}
+
 std::vector<Particle>
 read_all_gadget_files_data(const std::string prefix);
+
+void 
+write_vtk(const std::string& filename,
+          const std::vector<Particle>& particles,
+          const std::vector<size_t>& indices,
+          int64_t halo_id);

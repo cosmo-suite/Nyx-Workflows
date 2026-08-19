@@ -15,13 +15,15 @@
 #include <vector>
 #include <bit> // Required for std::byteswap (C++20)
 
+
 #include <fstream>
 #include <iostream>
 #include <vector>
-
 #include <iomanip>
 #include <sstream>
-#include <string>
+
+#include <filesystem>
+
 
 // Runtime check for little endianness
 static inline bool is_little_endian() 
@@ -55,7 +57,7 @@ static inline T to_big_endian(T val)
 void write_vtk_binary(const std::string& filename, 
                       const std::vector<float>& pos, 
                       const std::vector<float>& vel, 
-                      const std::vector<int32_t>& ids) 
+                      const std::vector<int64_t>& ids) 
 {
     std::ofstream out(filename, std::ios::binary);
     if (!out) {
@@ -168,19 +170,22 @@ void write_block(std::ofstream& out,
 // ------------------------------------------------------------
 constexpr double BoxSize = 10.0;
 
+constexpr int fac = 1;
+
 // Background
-constexpr uint64_t Nbg = 100000;
+constexpr uint64_t Nbg = 100e3*fac;
 
 // Halo #1
-constexpr uint64_t Nhalo1      = 2000;
-constexpr double   HaloRadius1 = 0.20;
-constexpr double   Center1X    = 3.0;
-constexpr double   Center1Y    = 3.0;
-constexpr double   Center1Z    = 3.0;
+constexpr uint64_t Nhalo1      = 20e3*fac;
+constexpr double   HaloRadius1 = 0.5;
+constexpr double   Center1X    = 2.0;
+constexpr double   Center1Y    = 2.0;
+constexpr double   Center1Z    = 2.0;
 
 // Halo #2
-constexpr uint64_t Nhalo2      = 5000;
-constexpr double   HaloRadius2 = 0.50;
+constexpr uint64_t Nhalo2      = 5e3*fac;
+constexpr double   HaloRadius2 = 0.2;
+
 constexpr double   Center2X    = 7.0;
 constexpr double   Center2Y    = 7.0;
 constexpr double   Center2Z    = 7.0;
@@ -192,7 +197,7 @@ constexpr uint64_t Ntot =
 // Parallel output parameters
 // ------------------------------------------------------------
 constexpr int NumBlocks = 8;
-constexpr int SnapshotNum = 000;
+constexpr int SnapshotNum = 0;
 constexpr const char* BaseName = "my_sim";
 
 // ------------------------------------------------------------
@@ -243,7 +248,7 @@ int main()
 {
     std::vector<float> pos(3 * Ntot);
     std::vector<float> vel(3 * Ntot);
-    std::vector<int32_t> ids(Ntot);
+    std::vector<int64_t> ids(Ntot);
 
     std::mt19937 rng(42);
 
@@ -267,7 +272,7 @@ int main()
         vel[3*p+1] = 0.0f;
         vel[3*p+2] = 0.0f;
 
-        ids[p] = static_cast<int32_t>(p + 1);
+        ids[p] = static_cast<int64_t>(p + 1);
     }
 
     // ========================================================
@@ -294,7 +299,7 @@ int main()
         vel[3*p+1] = 0.0f;
         vel[3*p+2] = 0.0f;
 
-        ids[p] = static_cast<int32_t>(p + 1);
+        ids[p] = static_cast<int64_t>(p + 1);
     }
 
     // ========================================================
@@ -321,7 +326,7 @@ int main()
         vel[3*p+1] = 0.0f;
         vel[3*p+2] = 0.0f;
 
-        ids[p] = static_cast<int32_t>(p + 1);
+        ids[p] = static_cast<int64_t>(p + 1);
     }
 
     write_vtk_binary("snapshot_000.vtk", pos, vel, ids);
@@ -330,7 +335,7 @@ int main()
     // Partition particles into 2x2x2 blocks
     std::array<std::vector<float>, NumBlocks> pos_blocks;
     std::array<std::vector<float>, NumBlocks> vel_blocks;
-    std::array<std::vector<int32_t>, NumBlocks> id_blocks;
+    std::array<std::vector<int64_t>, NumBlocks> id_blocks;
 
     for (uint64_t i = 0; i < Ntot; ++i)
     {
@@ -394,18 +399,16 @@ int main()
         hdr.flag_metals       = 0;
         hdr.flag_entropy_ics  = 0;
 
-        std::ostringstream ss;
-        ss << BaseName << "."
-        << std::setfill('0') << std::setw(3) << SnapshotNum << "."
-        << b;
+        std::ostringstream filename;
+        std::filesystem::create_directories("GadgetFilesForSnapshot");
+        filename << "GadgetFilesForSnapshot/" << BaseName << "." << std::setw(3) << std::setfill('0') << SnapshotNum << "." << b;
 
-        std::string filename = ss.str();
+        std::ofstream out(filename.str(), std::ios::binary);
 
-        std::ofstream out(filename, std::ios::binary);
         if (!out)
         {
             std::cerr << "Failed to open output file "
-                      << filename << "\n";
+                      << filename.str() << "\n";
             return 1;
         }
 
@@ -425,8 +428,8 @@ int main()
 
         write_block(out,
                     id_blocks[b].data(),
-                    static_cast<uint32_t>(
-                        id_blocks[b].size()*sizeof(int32_t)));
+                    static_cast<uint64_t>(
+                        id_blocks[b].size()*sizeof(int64_t)));
 
         out.close();
     }

@@ -56,6 +56,7 @@ struct BinaryHeader
 // ------------------------------------------------------------
 // Rockstar halo structure
 // ------------------------------------------------------------
+
 struct Halo
 {
     int64_t id;
@@ -100,7 +101,7 @@ struct Halo
     float m_pe_b;
     float m_pe_d;
 
-    float halfmass_radius;   // <-- MISSING FIELD
+    float halfmass_radius;
 
     int64_t num_p;
     int64_t num_child_particles;
@@ -112,6 +113,13 @@ struct Halo
     float min_pos_err;
     float min_vel_err;
     float min_bulkvel_err;
+
+    // add_flag & 1
+    float chi2;
+
+    // add_flag & 4
+    float inertia_tensor[6];
+    float inertia_tensor2[6];
 };
 
 // ------------------------------------------------------------
@@ -133,73 +141,6 @@ void read_exact(std::ifstream& in,
             << " items.\n";
 
         std::exit(1);
-    }
-}
-
-// ------------------------------------------------------------
-// Write halo particles to VTK
-// ------------------------------------------------------------
-void write_vtk(const std::string& filename,
-               const std::vector<Particle>& particles,
-               const std::vector<size_t>& indices,
-               int64_t halo_id)
-{
-    std::ofstream out(filename);
-
-    if (!out)
-    {
-        std::cerr
-            << "Cannot open "
-            << filename
-            << " for writing.\n";
-
-        std::exit(1);
-    }
-
-    const size_t n = indices.size();
-
-    out << "# vtk DataFile Version 3.0\n";
-    out << "halo " << halo_id << "\n";
-    out << "ASCII\n";
-    out << "DATASET POLYDATA\n";
-
-    out << "POINTS "
-        << n
-        << " float\n";
-
-    for (size_t idx : indices)
-    {
-        const Particle& p = particles[idx];
-
-        out << p.x << " "
-            << p.y << " "
-            << p.z << "\n";
-    }
-
-    out << "VERTICES "
-        << n
-        << " "
-        << 2 * n
-        << "\n";
-
-    for (size_t i = 0; i < n; i++)
-    {
-        out << "1 "
-            << i
-            << "\n";
-    }
-
-    out << "POINT_DATA "
-        << n
-        << "\n";
-
-    out << "SCALARS id long_long 1\n";
-    out << "LOOKUP_TABLE default\n";
-
-    for (size_t idx : indices)
-    {
-        out << particles[idx].id
-            << "\n";
     }
 }
 
@@ -281,6 +222,22 @@ int main(int argc, char** argv)
                &bh,
                1);
 
+    std::cout << "format_revision = "
+          << bh.format_revision
+          << "\n";
+
+std::cout << "add_flag = "
+          << bh.add_flag
+          << "\n";
+
+std::cout << "sizeof(BinaryHeader) = "
+          << sizeof(BinaryHeader)
+          << "\n";
+
+std::cout << "sizeof(Halo) = "
+          << sizeof(Halo)
+          << "\n";
+
     if (bh.magic != ROCKSTAR_MAGIC)
     {
         std::cerr
@@ -331,6 +288,7 @@ for (size_t i = 0;
         << "\n";
 }
 
+
     // --------------------------------------------------------
     // Read Gadget particle data
     // --------------------------------------------------------
@@ -343,6 +301,40 @@ for (size_t i = 0;
         << "Loaded "
         << particles.size()
         << " Gadget particles.\n";
+
+    if (!particles.empty()) {
+    auto [min_it, max_it] = std::minmax_element(
+        particles.begin(), particles.end(),
+        [](const Particle& a, const Particle& b) {
+            return a.id < b.id;
+        });
+
+    std::cout << "Min particle ID: " << min_it->id << "\n";
+    std::cout << "Max particle ID: " << max_it->id << "\n";
+}
+
+std::unordered_map<uint64_t, size_t> counts;
+counts.reserve(particles.size());
+
+for (const auto& p : particles) {
+    ++counts[p.id];
+}
+
+size_t duplicate_particles = 0;
+size_t max_count = 0;
+
+for (const auto& [id, count] : counts) {
+    if (count > 1) {
+        duplicate_particles += count - 1;
+        max_count = std::max(max_count, count);
+    }
+}
+
+std::cout << "Unique IDs: " << counts.size() << "\n";
+std::cout << "Duplicate particle entries: "
+          << duplicate_particles << "\n";
+std::cout << "Maximum occurrences of one ID: "
+          << max_count << "\n";
 
     // --------------------------------------------------------
     // Build particle ID lookup
@@ -399,42 +391,6 @@ for (size_t i = 0;
         std::vector<size_t> indices;
 
         indices.reserve(count);
-
-
-
-        size_t missing = 0;
-
-        for (size_t j = 0;
-             j < count;
-             j++)
-        {
-            const int64_t pid =
-                part_ids[start + j];
-
-            auto it =
-                id_to_index.find(pid);
-
-            if (it != id_to_index.end())
-            {
-                indices.push_back(
-                    it->second);
-            }
-            else
-            {
-                missing++;
-            }
-        }
-
-        if (missing > 0)
-        {
-            std::cout
-                << "Halo "
-                << halo.id
-                << ": missing "
-                << missing
-                << " particles.\n";
-        }
-
 
         std::vector<int64_t> missing_ids;
 
