@@ -61,6 +61,12 @@ Upon successful compilation, the generated executables will be located in the `b
 
 ## 🚀 Usage Examples
 
+1. The `Serial` directory has an example of a density field. Do
+```
+make -j8
+./out
+```
+
 ### 1. Extracting Topological Features (`mse`)
 Run `mse` on a density field to extract persistence structures (such as cosmic skeletons):
 
