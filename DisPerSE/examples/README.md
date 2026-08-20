@@ -61,7 +61,7 @@ Upon successful compilation, the generated executables will be located in the `b
 
 ## 🚀 Usage Examples
 
-1. The `Serial` directory has an example of a density field. Do
+1. The `Serial` directory has an example that creates a density field and writes a `.ndfield` file that DisPerSE can read. Do
 ```
 make -j8
 ./out
