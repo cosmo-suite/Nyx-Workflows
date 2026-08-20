@@ -67,7 +67,7 @@ make -j8
 ./out
 ```
 
-### 1. Extracting Topological Features (`mse`)
+2. Extracting Topological Features (`mse`)
 Run `mse` on a density field to extract persistence structures (such as cosmic skeletons):
 
 ```bash
@@ -78,7 +78,7 @@ Run `mse` on a density field to extract persistence structures (such as cosmic s
 * **`-nthreads 32`**: Parallelizes execution across 32 threads.
 * **`-upSkl`**: Generates the ascending persistence skeleton (`.NDskl`).
 
-### 2. Converting Output Skeletons (`skelconv`)
+3. Converting Output Skeletons (`skelconv`)
 Convert the resulting skeleton file into standard VTK format for visualization in **ParaView**:
 
 ```bash
