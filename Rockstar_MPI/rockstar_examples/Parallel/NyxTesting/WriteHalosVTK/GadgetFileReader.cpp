@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 std::string make_vtk_filename(const std::string& input_path)
 {
@@ -83,73 +84,6 @@ void write_vtk_particles(
     }
 
     out << "\n";
-}
-
-// ------------------------------------------------------------
-// Write halo particles to VTK
-// ------------------------------------------------------------
-void write_vtk(const std::string& filename,
-               const std::vector<Particle>& particles,
-               const std::vector<size_t>& indices,
-               int64_t halo_id)
-{
-    std::ofstream out(filename);
-
-    if (!out)
-    {
-        std::cerr
-            << "Cannot open "
-            << filename
-            << " for writing.\n";
-
-        std::exit(1);
-    }
-
-    const size_t n = indices.size();
-
-    out << "# vtk DataFile Version 3.0\n";
-    out << "halo " << halo_id << "\n";
-    out << "ASCII\n";
-    out << "DATASET POLYDATA\n";
-
-    out << "POINTS "
-        << n
-        << " float\n";
-
-    for (size_t idx : indices)
-    {
-        const Particle& p = particles[idx];
-
-        out << p.x << " "
-            << p.y << " "
-            << p.z << "\n";
-    }
-
-    out << "VERTICES "
-        << n
-        << " "
-        << 2 * n
-        << "\n";
-
-    for (size_t i = 0; i < n; i++)
-    {
-        out << "1 "
-            << i
-            << "\n";
-    }
-
-    out << "POINT_DATA "
-        << n
-        << "\n";
-
-    out << "SCALARS id long_long 1\n";
-    out << "LOOKUP_TABLE default\n";
-
-    for (size_t idx : indices)
-    {
-        out << particles[idx].id
-            << "\n";
-    }
 }
 
 // ------------------------------------------------------------
@@ -269,50 +203,26 @@ void read_gadget_file(const fs::path& filename,
         << " particles\n";
 }
 
-
 std::vector<Particle>
-read_all_gadget_files_data(const std::string prefix)
+read_all_gadget_files_data(
+    const std::vector<std::string>& files)
 {
-
-    fs::path directory(prefix);
-
-
-    if (!fs::exists(directory))
-    {
-        std::cerr
-            << "Directory does not exist\n";
-        exit(1);
-    }
-
-    std::vector<fs::path> files;
-
-    for (auto& entry :
-         fs::directory_iterator(directory))
-    {
-        if (entry.is_regular_file())
-        {
-            files.push_back(entry.path());
-        }
-    }
-
-
-    // Sort for deterministic ordering
-    std::sort(files.begin(),
-              files.end());
-    
-    std::cout << "Sorting files done" << std::endl;
-
     std::vector<Particle> particles;
 
-    for (auto& f : files)
-    {
-        
-        //std::vector<Particle> tmp_particles;
-        read_gadget_file(f, particles);
-        //read_gadget_file(f, tmp_particles);
-         //std::string vtk_name = make_vtk_filename(f);
+    // --------------------------------------------------------
+    // Read each supplied Gadget file
+    // --------------------------------------------------------
 
-         //write_vtk_particles(vtk_name, tmp_particles);    
+    for (const auto& filename : files)
+    {
+        fs::path f(filename);
+
+        std::cout
+            << "Reading "
+            << f
+            << "\n";
+
+        read_gadget_file(f, particles);
     }
 
     std::cout
@@ -320,10 +230,9 @@ read_all_gadget_files_data(const std::string prefix)
         << particles.size()
         << "\n";
 
-
     // Example access
-    for (size_t i=0;
-         i<std::min<size_t>(10,particles.size());
+    for (size_t i = 0;
+         i < std::min<size_t>(10, particles.size());
          i++)
     {
         std::cout
@@ -336,6 +245,190 @@ read_all_gadget_files_data(const std::string prefix)
             << particles[i].z
             << "\n";
     }
-    
+
+    return particles;
+}
+
+// ------------------------------------------------------------
+// Read Gadget particle data for a specific snapshot
+// ------------------------------------------------------------
+std::vector<Particle>
+read_gadget_particles(
+    const std::string& gadget_files_dir,
+    int64_t snapshot_id)
+{
+    // --------------------------------------------------------
+    // Construct zero-padded snapshot ID
+    //
+    // Example:
+    //   snapshot_id = 3
+    //   snapshot_tag = "003"
+    // --------------------------------------------------------
+
+    std::ostringstream snapshot_stream;
+
+    snapshot_stream
+        << std::setw(3)
+        << std::setfill('0')
+        << snapshot_id;
+
+    const std::string snapshot_tag =
+        snapshot_stream.str();
+
+    const std::string prefix =
+        "nyx_snapshot." +
+        snapshot_tag +
+        ".";
+
+    std::cout
+        << "Reading Gadget files for snapshot "
+        << snapshot_id
+        << " ("
+        << prefix
+        << "*)\n";
+
+    // --------------------------------------------------------
+    // Find all matching Gadget files
+    // --------------------------------------------------------
+
+    std::vector<std::string> gadget_files;
+
+    for (const auto& entry :
+         fs::directory_iterator(gadget_files_dir))
+    {
+        if (!entry.is_regular_file())
+        {
+            continue;
+        }
+
+        const std::string filename =
+            entry.path().filename().string();
+
+        if (filename.rfind(prefix, 0) == 0)
+        {
+            gadget_files.push_back(
+                entry.path().string());
+        }
+    }
+
+    if (gadget_files.empty())
+    {
+        std::cerr
+            << "Error: no Gadget files found for snapshot "
+            << snapshot_id
+            << " using prefix "
+            << prefix
+            << "\n";
+
+        std::exit(1);
+    }
+
+    // --------------------------------------------------------
+    // Sort files so that .0, .1, .2, ... are read in order
+    // --------------------------------------------------------
+
+    std::sort(
+        gadget_files.begin(),
+        gadget_files.end());
+
+    std::cout
+        << "Found "
+        << gadget_files.size()
+        << " Gadget files:\n";
+
+    for (const auto& file : gadget_files)
+    {
+        std::cout
+            << "    "
+            << file
+            << "\n";
+    }
+
+    // --------------------------------------------------------
+    // Read the matching Gadget files
+    //
+    // NOTE:
+    // This assumes GadgetFileReader provides a function that
+    // can read a specific list of files. If the existing
+    // read_all_gadget_files_data() only accepts a directory,
+    // we will need to modify that function as well.
+    // --------------------------------------------------------
+
+    std::vector<Particle> particles =
+        read_all_gadget_files_data(
+            gadget_files);
+
+    std::cout
+        << "Loaded "
+        << particles.size()
+        << " Gadget particles.\n";
+
+    // --------------------------------------------------------
+    // Particle ID diagnostics
+    // --------------------------------------------------------
+
+    if (!particles.empty())
+    {
+        auto [min_it, max_it] =
+            std::minmax_element(
+                particles.begin(),
+                particles.end(),
+                [](const Particle& a,
+                   const Particle& b)
+                {
+                    return a.id < b.id;
+                });
+
+        std::cout
+            << "Min particle ID: "
+            << min_it->id
+            << "\n";
+
+        std::cout
+            << "Max particle ID: "
+            << max_it->id
+            << "\n";
+    }
+
+    std::unordered_map<uint64_t, size_t> counts;
+
+    counts.reserve(
+        particles.size());
+
+    for (const auto& p : particles)
+    {
+        ++counts[p.id];
+    }
+
+    size_t duplicate_particles = 0;
+    size_t max_count = 0;
+
+    for (const auto& [id, count] : counts)
+    {
+        if (count > 1)
+        {
+            duplicate_particles +=
+                count - 1;
+
+            max_count =
+                std::max(max_count, count);
+        }
+    }
+
+    std::cout
+        << "Unique IDs: "
+        << counts.size()
+        << "\n";
+
+    std::cout
+        << "Duplicate particle entries: "
+        << duplicate_particles
+        << "\n";
+
+    std::cout
+        << "Maximum occurrences of one ID: "
+        << max_count
+        << "\n";
+
     return particles;
 }

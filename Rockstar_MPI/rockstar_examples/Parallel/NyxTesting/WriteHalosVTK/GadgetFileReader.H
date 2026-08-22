@@ -1,3 +1,6 @@
+#ifndef GADGETFILEREADER_H
+#define GADGETFILEREADER_H
+
 #include <cassert>
 #include <cstdint>
 #include <cstring>
@@ -7,7 +10,9 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <unordered_map>
 
+#include "Particle.H"
 
 namespace fs = std::filesystem;
 
@@ -38,17 +43,6 @@ struct GadgetHeader
 };
 
 static_assert(sizeof(GadgetHeader) == 256);
-
-// ------------------------------------------------------------
-// Particle structure
-// ------------------------------------------------------------
-struct Particle
-{
-    int64_t id;
-    float x;
-    float y;
-    float z;
-};
 
 // ------------------------------------------------------------
 // Read one Gadget block
@@ -97,10 +91,11 @@ void write_be(std::ofstream& out, T value)
 }
 
 std::vector<Particle>
-read_all_gadget_files_data(const std::string prefix);
+read_all_gadget_files_data(
+    const std::vector<std::string>& files);
 
-void 
-write_vtk(const std::string& filename,
-          const std::vector<Particle>& particles,
-          const std::vector<size_t>& indices,
-          int64_t halo_id);
+std::vector<Particle>
+read_gadget_particles(
+    const std::string& gadget_files_dir,
+    int64_t snapshot_id);
+#endif
