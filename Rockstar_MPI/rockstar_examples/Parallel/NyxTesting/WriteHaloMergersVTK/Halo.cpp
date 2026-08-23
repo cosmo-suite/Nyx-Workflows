@@ -842,6 +842,14 @@ void compute_population_merger_rate()
 #include <vector>
 #include <algorithm>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <math.h>
+#include <vector>
+#include <algorithm>
+
 /*
  * Helper: Recursively collect all secondary progenitors for a given descendant,
  * including multi-level sub-branches (sub-subhalos) that merged during dz.
@@ -859,21 +867,6 @@ void collect_all_progenitors(struct halo *curr, struct halo *main_prog, std::vec
     collect_all_progenitors(curr->next_coprog, main_prog, secondaries);
 }
 
-/*
- * Helper: Get pre-stripping / infall mass (mpeak or m_infall) if available,
- * falling back to mvir if unpopulated.
- */
-inline double get_halo_infall_mass(const struct halo *h)
-{
-    // Adjust struct field names (e.g., h->mpeak or h->m_infall) if defined in your header
-#if defined(HAS_MPEAK)
-    if (h->mpeak > 0.0) return h->mpeak;
-#elif defined(HAS_MINFALL)
-    if (h->m_infall > 0.0) return h->m_infall;
-#endif
-    return h->mvir;
-}
-
 void compute_mean_merger_rate()
 {
     /*
@@ -881,9 +874,9 @@ void compute_mean_merger_rate()
      * Simulation Resolution & Completeness Cutoffs
      * --------------------------------------------------------
      */
-    const double particle_mass = 6.5e5;                     // Particle mass (M_sun / h)
-    const double min_prog_mass = 40.0 * particle_mass;      // Hard 40-particle progenitor detection limit
-    const double completeness_mass = 200.0 * particle_mass;  // ~200-particle completeness threshold
+    const double particle_mass = 6.5e5;                      // Particle mass (M_sun / h)
+    const double min_prog_mass = 40.0 * particle_mass;       // Hard 40-particle detection limit
+    const double completeness_mass = 500.0 * particle_mass;  // 500-particle threshold for complete subhalo detection
 
     /*
      * --------------------------------------------------------
@@ -910,13 +903,13 @@ void compute_mean_merger_rate()
     /*
      * --------------------------------------------------------
      * Mass-ratio bins (xi = M_i / M_1)
-     * Dynamically generated fine logarithmic grid (50 bins)
+     * Fine logarithmic grid (50 bins) spanning [10^-4, 1.0]
      * --------------------------------------------------------
      */
     const int n_xi_bins = 50;
     double xi_bins[n_xi_bins + 1];
 
-    double log_xi_min = log10(1.0e-5);
+    double log_xi_min = log10(1.0e-4);
     double log_xi_max = log10(1.0);
     double dlog_xi = (log_xi_max - log_xi_min) / n_xi_bins;
 
@@ -927,7 +920,7 @@ void compute_mean_merger_rate()
 
     /*
      * --------------------------------------------------------
-     * Collect unique scale factors
+     * Collect and sort unique scale factors
      * --------------------------------------------------------
      */
     std::vector<double> scales;
@@ -1011,35 +1004,36 @@ void compute_mean_merger_rate()
                 continue;
 
             /*
-             * Identify M_1 as the MOST MASSIVE progenitor at z_prog
+             * FIX 1: Scan all coprogenitors to guarantee M_1 is strictly 
+             * the MOST MASSIVE progenitor at z_prog.
              */
             struct halo *main_prog = h->prog;
-            struct halo *curr = h->prog;
+            struct halo *curr = h->prog->next_coprog;
 
             while (curr)
             {
-                if (get_halo_infall_mass(curr) > get_halo_infall_mass(main_prog))
+                if (curr->mvir > main_prog->mvir)
                 {
                     main_prog = curr;
                 }
                 curr = curr->next_coprog;
             }
 
-            double m1_mass = get_halo_infall_mass(main_prog);
+            double m1_mass = main_prog->mvir;
             if (m1_mass <= 0.0)
                 continue;
 
             /*
-             * Recursively gather all secondary progenitors (including sub-subhalos)
+             * Gather all secondary progenitors attached to descendant h
              */
             std::vector<struct halo*> secondaries;
             collect_all_progenitors(h->prog, main_prog, secondaries);
 
             for (struct halo *secondary : secondaries)
             {
-                double m2_mass = get_halo_infall_mass(secondary);
+                double m2_mass = secondary->mvir;
 
-                // Enforce resolution cutoff on secondary progenitor mass
+                // Resolution check on secondary progenitor
                 if (m2_mass < min_prog_mass)
                     continue;
 
@@ -1106,12 +1100,14 @@ void compute_mean_merger_rate()
                 if (N_halos[m] < MIN_HALOS)
                     continue;
 
-                double M_desc = sqrt(mass_bins[m] * mass_bins[m + 1]);
-
                 /*
-                 * Filter out incomplete bins using the 200-particle limit
+                 * FIX 2: Evaluate resolution against the LOWER mass bound of the bin (mass_bins[m]) 
+                 * to guarantee that every single halo contributing to the sum meets the 
+                 * 500-particle completeness criterion.
                  */
-                if (xi_center * M_desc >= completeness_mass)
+                double M_min_bin = mass_bins[m];
+
+                if (xi_center * M_min_bin >= completeness_mass)
                 {
                     total_mergers += N_mergers[m][x];
                     valid_halos += N_halos[m];
