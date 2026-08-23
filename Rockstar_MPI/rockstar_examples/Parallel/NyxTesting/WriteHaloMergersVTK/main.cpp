@@ -98,7 +98,9 @@ int main(int argc, char **argv)
     std::vector<merger_event> mergers =
     compute_merger_rate(h);
 
-    print_merger_events(mergers);
+    //print_merger_events(mergers);
+
+    compute_population_merger_rate();    
 
     /*
      * --------------------------------------------------------
