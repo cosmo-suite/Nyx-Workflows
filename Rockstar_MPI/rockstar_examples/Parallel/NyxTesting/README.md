@@ -32,7 +32,7 @@ With the above string for the `FILENAME`, the gadget filenames has to be of the 
 
 5. Run
 `mpirun -np <num_ranks> mpi-rockstar -c <.cfg-file>`
-This will write the halo.bin files and halo.ascii files into the `OUTBASE` directory. There will be as many `.bin` and `.ascii` files as the number of MPI ranks for each snapshot. The `.ascii` files contain a summary of the halos, and `.bin` contains the particles that form each of the halos. An example of the `.cfg` file is given in `rockstar_allsnapshots.cfg`.
+This will write the halo.bin files and halo.ascii files into the `OUTBASE` directory. There will be as many `.bin` and `.ascii` files as the number of MPI ranks for each snapshot. The `.ascii` files contain a summary of the halos, and `.bin` contains the particles that form each of the halos. An example of the `.cfg` file is given in `rockstar_allsnapshots.cfg`. For a $$1024^3$$ particle snapshot, it takes about 5-10 minutes to compute the halos for that snapshot on 256 MPI ranks.
 
 6. To visualize the halos
 ```
@@ -83,5 +83,4 @@ make -j8
 ```
 perl do_merger_tree.pl <path-to-OUTBASE>/outputs/merger_tree.cfg
 ```
-This will generate the trees in the `OUTBASE/trees` directory. The trees are contained in a file named `tree_0_0_.dat`.
-
+This will generate the trees in the `OUTBASE/trees` directory. The trees are contained in a file named `tree_0_0_.dat`. This is a serial code. It takes a 1-2 hours to generate the halo merger trees.
