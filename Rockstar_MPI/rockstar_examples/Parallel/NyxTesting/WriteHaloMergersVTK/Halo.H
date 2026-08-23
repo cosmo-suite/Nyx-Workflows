@@ -55,4 +55,6 @@ std::vector<merger_event> compute_merger_rate(
 
 void print_merger_events(
     const std::vector<merger_event>& mergers);
+
+void compute_population_merger_rate();
 #endif
