@@ -111,6 +111,8 @@ int main(int argc, char **argv)
     //build_merger_tree_vtk(h);
 
 
+    compute_mean_merger_rate();
+
     delete_tree();
 
     return 0;
