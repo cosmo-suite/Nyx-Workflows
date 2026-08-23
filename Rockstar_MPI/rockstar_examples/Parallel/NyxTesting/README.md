@@ -4,7 +4,7 @@ To use this code, first the Nyx simulation has to be run to obtain the particle 
 
 Note: The mpi-rockstar code works only with OpenMPI and not MPICH.
 
-## Computing halos for all snapshots at different redshifts
+## 1. Computing halos for all snapshots at different redshifts
 
 1. Clone the Rockstar repository and compile
 
@@ -55,7 +55,7 @@ The image below shows the result of executing the above pipeline for a Nyx snaps
 </div>
 
 
-## Computing the halo mergers
+## 2. Computing the halo mergers
 
 For this, the companion code of Rockstar - [consistent-trees](https://github.com/cosmo-suite/consistent-trees.git) is used. This is a copy of the [original consistent-trees codebase](https://bitbucket.org/pbehroozi/consistent-trees/src/main/). Here are the steps
 
