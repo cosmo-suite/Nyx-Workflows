@@ -825,14 +825,30 @@ void compute_population_merger_rate()
     printf("============================================================================================================================\n");
 }
 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <math.h>
+#include <vector>
+#include <algorithm>
+
 void compute_mean_merger_rate()
 {
+    /*
+     * --------------------------------------------------------
+     * Simulation Resolution & Cutoffs
+     * --------------------------------------------------------
+     */
+    const double particle_mass = 6.5e5;                   // Particle mass (M_sun / h)
+    const double min_prog_mass = 40.0 * particle_mass;    // 40-particle progenitor threshold
+
     /*
      * --------------------------------------------------------
      * Descendant halo mass bins
      * --------------------------------------------------------
      */
-
     const double mass_bins[] =
     {
         6.0e8,
@@ -850,73 +866,47 @@ void compute_mean_merger_rate()
     const int n_mass_bins =
         sizeof(mass_bins) / sizeof(mass_bins[0]) - 1;
 
-
     /*
      * --------------------------------------------------------
      * Minimum number of halos required in a mass bin.
-     *
-     * This avoids very noisy high-mass bins.
      * --------------------------------------------------------
      */
-
     const int64_t MIN_HALOS = 100;
 
-
     /*
      * --------------------------------------------------------
-     * Mass-ratio bins.
-     *
-     * xi = M_secondary / M_main
-     *
-     * Logarithmically spaced to allow comparison with
-     * Fakhouri et al.
-     *
-     * The lower end is 1e-5, but bins with no resolved
-     * mergers are simply not written.
+     * Mass-ratio bins (xi = M_secondary / M_main)
      * --------------------------------------------------------
      */
 
-    const double xi_bins[] =
+    /*
+     * --------------------------------------------------------
+     * Mass-ratio bins (xi = M_secondary / M_main)
+     * Dynamically generated fine logarithmic grid (50 bins)
+     * --------------------------------------------------------
+     */
+    const int n_xi_bins = 50;
+    double xi_bins[n_xi_bins + 1];
+
+    double log_xi_min = log10(1.0e-5);
+    double log_xi_max = log10(1.0);
+    double dlog_xi = (log_xi_max - log_xi_min) / n_xi_bins;
+
+    for (int i = 0; i <= n_xi_bins; i++)
     {
-        1.0e-5,
-        2.0e-5,
-        4.0e-5,
-        8.0e-5,
-        1.6e-4,
-        3.2e-4,
-        6.4e-4,
-        1.28e-3,
-        2.56e-3,
-        5.12e-3,
-        1.024e-2,
-        2.048e-2,
-        4.096e-2,
-        8.192e-2,
-        1.6384e-1,
-        3.2768e-1,
-        6.5536e-1,
-        1.0
-    };
-
-    const int n_xi_bins =
-        sizeof(xi_bins) / sizeof(xi_bins[0]) - 1;
-
+        xi_bins[i] = pow(10.0, log_xi_min + i * dlog_xi);
+    }
 
     /*
      * --------------------------------------------------------
-     * Collect unique scale factors.
+     * Collect unique scale factors
      * --------------------------------------------------------
      */
-
     std::vector<double> scales;
 
-    for (int64_t i = 0;
-         i < all_halos.num_halos;
-         i++)
+    for (int64_t i = 0; i < all_halos.num_halos; i++)
     {
-        double a =
-            all_halos.halos[i].scale;
-
+        double a = all_halos.halos[i].scale;
         bool found = false;
 
         for (double s : scales)
@@ -932,499 +922,198 @@ void compute_mean_merger_rate()
             scales.push_back(a);
     }
 
-
     /*
      * --------------------------------------------------------
-     * Sort from high redshift -> low redshift.
-     *
-     * Small a = high z
-     * Large a = low z
+     * Sort from high redshift -> low redshift
      * --------------------------------------------------------
      */
-
-    std::sort(
-        scales.begin(),
-        scales.end()
-    );
-
+    std::sort(scales.begin(), scales.end());
 
     printf("\n");
     printf("MEAN HALO MERGER RATE -- FAKHOURI STYLE\n");
     printf("============================================================\n");
     printf("Found %zu unique scale factors\n", scales.size());
 
-
     /*
      * --------------------------------------------------------
-     * Loop over adjacent snapshot pairs.
-     *
-     * progenitor:
-     *     scales[level]
-     *
-     * descendant:
-     *     scales[level + 1]
+     * Loop over adjacent snapshot pairs
      * --------------------------------------------------------
      */
-
-    for (size_t level = 0;
-         level + 1 < scales.size();
-         level++)
+    for (size_t level = 0; level + 1 < scales.size(); level++)
     {
-        double a_prog =
-            scales[level];
+        double a_prog = scales[level];
+        double a_desc = scales[level + 1];
 
-        double a_desc =
-            scales[level + 1];
+        double z_prog = 1.0 / a_prog - 1.0;
+        double z_desc = 1.0 / a_desc - 1.0;
 
-
-        double z_prog =
-            1.0 / a_prog - 1.0;
-
-        double z_desc =
-            1.0 / a_desc - 1.0;
-
-
-        double dz =
-            z_prog - z_desc;
-
+        double dz = z_prog - z_desc;
 
         if (dz <= 0.0)
             continue;
 
-
         /*
          * ----------------------------------------------------
-         * Count halos in each descendant mass bin.
+         * Initialize counters
          * ----------------------------------------------------
          */
-
         int64_t N_halos[n_mass_bins];
-
-        for (int m = 0;
-             m < n_mass_bins;
-             m++)
-        {
+        for (int m = 0; m < n_mass_bins; m++)
             N_halos[m] = 0;
-        }
-
-
-        /*
-         * ----------------------------------------------------
-         * Count mergers in each mass bin and xi bin.
-         * ----------------------------------------------------
-         */
 
         int64_t N_mergers[n_mass_bins][n_xi_bins];
-
-        for (int m = 0;
-             m < n_mass_bins;
-             m++)
-        {
-            for (int x = 0;
-                 x < n_xi_bins;
-                 x++)
-            {
+        for (int m = 0; m < n_mass_bins; m++)
+            for (int x = 0; x < n_xi_bins; x++)
                 N_mergers[m][x] = 0;
-            }
-        }
-
 
         /*
          * ----------------------------------------------------
-         * Loop over descendant halos.
+         * Loop over descendant halos
          * ----------------------------------------------------
          */
-
-        for (int64_t i = 0;
-             i < all_halos.num_halos;
-             i++)
+        for (int64_t i = 0; i < all_halos.num_halos; i++)
         {
-            struct halo *h =
-                &all_halos.halos[i];
-
-
-            /*
-             * Only descendant halos at this snapshot.
-             */
+            struct halo *h = &all_halos.halos[i];
 
             if (fabs(h->scale - a_desc) > 1.0e-6)
                 continue;
 
-
-            /*
-             * Ignore halos below our mass range.
-             */
-
             if (h->mvir < mass_bins[0])
                 continue;
 
-
-            /*
-             * Find descendant mass bin.
-             */
-
             int mbin = -1;
-
-            for (int m = 0;
-                 m < n_mass_bins;
-                 m++)
+            for (int m = 0; m < n_mass_bins; m++)
             {
-                if (h->mvir >= mass_bins[m] &&
-                    h->mvir < mass_bins[m + 1])
+                if (h->mvir >= mass_bins[m] && h->mvir < mass_bins[m + 1])
                 {
                     mbin = m;
                     break;
                 }
             }
 
-
             if (mbin < 0)
                 continue;
 
-
-            /*
-             * Count this descendant halo.
-             */
-
             N_halos[mbin]++;
-
-
-            /*
-             * ------------------------------------------------
-             * Need a main progenitor.
-             * ------------------------------------------------
-             */
 
             if (!h->prog)
                 continue;
 
-
-            struct halo *main_prog =
-                h->prog;
-
+            struct halo *main_prog = h->prog;
 
             if (main_prog->mvir <= 0.0)
                 continue;
 
-
             /*
              * ------------------------------------------------
-             * Loop over secondary progenitors.
+             * Loop over secondary progenitors
              * ------------------------------------------------
              */
-
-            struct halo *secondary =
-                main_prog->next_coprog;
-
+            struct halo *secondary = main_prog->next_coprog;
 
             while (secondary)
             {
-                if (secondary->mvir <= 0.0)
+                // Enforce resolution cutoff on secondary progenitor mass
+                if (secondary->mvir < min_prog_mass)
                 {
-                    secondary =
-                        secondary->next_coprog;
-
+                    secondary = secondary->next_coprog;
                     continue;
                 }
 
+                double xi = secondary->mvir / main_prog->mvir;
 
-                /*
-                 * Mass ratio:
-                 *
-                 * xi = M_secondary / M_main
-                 */
-
-                double xi =
-                    secondary->mvir /
-                    main_prog->mvir;
-
-
-                /*
-                 * Ignore pathological ratios.
-                 */
-
-                if (xi < xi_bins[0] ||
-                    xi > 1.0)
+                if (xi < xi_bins[0] || xi > 1.0)
                 {
-                    secondary =
-                        secondary->next_coprog;
-
+                    secondary = secondary->next_coprog;
                     continue;
                 }
-
-
-                /*
-                 * Find xi bin.
-                 */
 
                 int xbin = -1;
-
-                for (int x = 0;
-                     x < n_xi_bins;
-                     x++)
+                for (int x = 0; x < n_xi_bins; x++)
                 {
-                    if (xi >= xi_bins[x] &&
-                        xi < xi_bins[x + 1])
+                    if (xi >= xi_bins[x] && xi < xi_bins[x + 1])
                     {
                         xbin = x;
                         break;
                     }
                 }
 
-
-                /*
-                 * xi = 1 goes into final bin.
-                 */
-
                 if (xi == 1.0)
                     xbin = n_xi_bins - 1;
-
 
                 if (xbin >= 0)
                     N_mergers[mbin][xbin]++;
 
-
-                secondary =
-                    secondary->next_coprog;
+                secondary = secondary->next_coprog;
             }
         }
 
-
         /*
          * ----------------------------------------------------
-         * Check which mass bins have >= 100 halos.
-         *
-         * We then combine all qualifying mass bins using
-         * the proper halo-weighted population average:
-         *
-         *
-         *       total mergers
-         * R = --------------------
-         *       total halos dz dxi
-         *
+         * Open output file
          * ----------------------------------------------------
          */
-
-        int64_t total_halos = 0;
-
-        for (int m = 0;
-             m < n_mass_bins;
-             m++)
-        {
-            if (N_halos[m] >= MIN_HALOS)
-                total_halos += N_halos[m];
-        }
-
-
-        /*
-         * No sufficiently populated mass bins.
-         */
-
-        if (total_halos == 0)
-            continue;
-
-
-        /*
-         * ----------------------------------------------------
-         * Output filename.
-         *
-         * Example:
-         *
-         * merger_rate_z2.00.dat
-         * ----------------------------------------------------
-         */
-
         char filename[256];
+        snprintf(filename, sizeof(filename), "merger_rate_z%.2f.dat", z_desc);
 
-        snprintf(
-            filename,
-            sizeof(filename),
-            "merger_rate_z%.2f.dat",
-            z_desc
-        );
-
-
-        FILE *fp =
-            fopen(filename, "w");
-
-
+        FILE *fp = fopen(filename, "w");
         if (!fp)
         {
-            fprintf(
-                stderr,
-                "ERROR: cannot open %s\n",
-                filename
-            );
-
+            fprintf(stderr, "ERROR: cannot open %s\n", filename);
             continue;
         }
 
-
-        /*
-         * Header.
-         */
-
-        fprintf(
-            fp,
-            "# Mean merger rate per halo\n"
-        );
-
-        fprintf(
-            fp,
-            "# z_desc = %.8f\n",
-            z_desc
-        );
-
-        fprintf(
-            fp,
-            "# z_prog = %.8f\n",
-            z_prog
-        );
-
-        fprintf(
-            fp,
-            "# dz = %.8f\n",
-            dz
-        );
-
-        fprintf(
-            fp,
-            "# N_halos = %" PRId64 "\n",
-            total_halos
-        );
-
-        fprintf(
-            fp,
-            "# xi    dNm/dxi/dz\n"
-        );
-
+        fprintf(fp, "# Mean merger rate per halo\n");
+        fprintf(fp, "# z_desc = %.8f\n", z_desc);
+        fprintf(fp, "# z_prog = %.8f\n", z_prog);
+        fprintf(fp, "# dz = %.8f\n", dz);
+        fprintf(fp, "# xi    dNm/dxi/dz\n");
 
         /*
          * ----------------------------------------------------
-         * Calculate the mean merger rate.
+         * Calculate and write mean merger rate per xi bin
          * ----------------------------------------------------
          */
+        int64_t overall_valid_halos = 0;
 
-        for (int x = 0;
-             x < n_xi_bins;
-             x++)
+        for (int x = 0; x < n_xi_bins; x++)
         {
-            /*
-             * Total mergers from all sufficiently populated
-             * descendant mass bins.
-             */
-
             int64_t total_mergers = 0;
+            int64_t valid_halos = 0;
 
+            double xi_center = sqrt(xi_bins[x] * xi_bins[x + 1]);
+            double dxi = xi_bins[x + 1] - xi_bins[x];
 
-            for (int m = 0;
-                 m < n_mass_bins;
-                 m++)
+            for (int m = 0; m < n_mass_bins; m++)
             {
-                /*
-                 * Exclude poorly populated mass bins.
-                 */
-
                 if (N_halos[m] < MIN_HALOS)
                     continue;
 
+                double M_desc = sqrt(mass_bins[m] * mass_bins[m + 1]);
 
-                total_mergers +=
-                    N_mergers[m][x];
+                // Include mass bin only if it can resolve secondary progenitors at this xi
+                if (xi_center * M_desc >= min_prog_mass)
+                {
+                    total_mergers += N_mergers[m][x];
+                    valid_halos += N_halos[m];
+                }
             }
 
-
-            /*
-             * ------------------------------------------------
-             * No mergers in this xi bin.
-             *
-             * Do not write zeroes because they can be confused
-             * with a physically measured zero rate on a
-             * logarithmic plot.
-             * ------------------------------------------------
-             */
-
-            if (total_mergers == 0)
+            if (valid_halos == 0 || total_mergers == 0)
                 continue;
 
+            overall_valid_halos += valid_halos;
 
-            /*
-             * Width of xi bin.
-             */
+            double rate = (double)total_mergers / ((double)valid_halos * dz * dxi);
 
-            double dxi =
-                xi_bins[x + 1] -
-                xi_bins[x];
-
-
-            /*
-             * Geometric center of xi bin.
-             *
-             * This is the appropriate representative x
-             * coordinate for logarithmic bins.
-             */
-
-            double xi_center =
-                sqrt(
-                    xi_bins[x] *
-                    xi_bins[x + 1]
-                );
-
-
-            /*
-             * ------------------------------------------------
-             * Fakhouri quantity:
-             *
-             *
-             * dNm
-             * ------
-             * dxi dz
-             *
-             * =
-             *
-             * N_mergers
-             * ------------------------------
-             * N_halos * dz * dxi
-             * ------------------------------------------------
-             */
-
-            double rate =
-                (double) total_mergers /
-                (
-                    (double) total_halos *
-                    dz *
-                    dxi
-                );
-
-
-            /*
-             * Two-column output.
-             */
-
-            fprintf(
-                fp,
-                "%.8e %.8e\n",
-                xi_center,
-                rate
-            );
+            fprintf(fp, "%.8e %.8e\n", xi_center, rate);
         }
-
 
         fclose(fp);
 
-
-        printf(
-            "z = %.5f  ->  %s  "
-            "(N_halos = %" PRId64 ")\n",
-            z_desc,
-            filename,
-            total_halos
-        );
+        printf("z = %.5f  ->  %s  (Evaluated with resolution bounds)\n", z_desc, filename);
     }
 
-
-    printf(
-        "============================================================\n"
-    );
+    printf("============================================================\n");
 }
 
