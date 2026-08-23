@@ -826,21 +826,6 @@ void compute_population_merger_rate()
 }
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <math.h>
-#include <vector>
-#include <algorithm>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <math.h>
-#include <vector>
-#include <algorithm>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -874,9 +859,9 @@ void compute_mean_merger_rate()
      * Simulation Resolution & Completeness Cutoffs
      * --------------------------------------------------------
      */
-    const double particle_mass = 6.5e5;                      // Particle mass (M_sun / h)
-    const double min_prog_mass = 40.0 * particle_mass;       // Hard 40-particle detection limit
-    const double completeness_mass = 500.0 * particle_mass;  // 500-particle threshold for complete subhalo detection
+    const double particle_mass = 6.5e5;                       // Particle mass (M_sun / h)
+    const double min_prog_mass = 40.0 * particle_mass;        // Hard 40-particle detection limit
+    const double completeness_mass = 1000.0 * particle_mass;  // 1000-particle threshold for complete subhalos
 
     /*
      * --------------------------------------------------------
@@ -1004,8 +989,7 @@ void compute_mean_merger_rate()
                 continue;
 
             /*
-             * FIX 1: Scan all coprogenitors to guarantee M_1 is strictly 
-             * the MOST MASSIVE progenitor at z_prog.
+             * Enforce M_1 as the MOST MASSIVE progenitor at z_prog
              */
             struct halo *main_prog = h->prog;
             struct halo *curr = h->prog->next_coprog;
@@ -1084,42 +1068,44 @@ void compute_mean_merger_rate()
 
         /*
          * ----------------------------------------------------
-         * Calculate dN_m / dxi / dz
+         * Calculate dN_m / dxi / dz using per-bin averaging
          * ----------------------------------------------------
          */
         for (int x = 0; x < n_xi_bins; x++)
         {
-            int64_t total_mergers = 0;
-            int64_t valid_halos = 0;
-
             double xi_center = sqrt(xi_bins[x] * xi_bins[x + 1]);
             double dxi = xi_bins[x + 1] - xi_bins[x];
+
+            double rate_sum = 0.0;
+            int valid_bins_count = 0;
 
             for (int m = 0; m < n_mass_bins; m++)
             {
                 if (N_halos[m] < MIN_HALOS)
                     continue;
 
-                /*
-                 * FIX 2: Evaluate resolution against the LOWER mass bound of the bin (mass_bins[m]) 
-                 * to guarantee that every single halo contributing to the sum meets the 
-                 * 500-particle completeness criterion.
-                 */
-                double M_min_bin = mass_bins[m];
+                // Representative descendant mass for bin m
+                double M_desc = sqrt(mass_bins[m] * mass_bins[m + 1]);
 
-                if (xi_center * M_min_bin >= completeness_mass)
+                // Verify secondary mass meets the completeness particle threshold
+                if (xi_center * M_desc >= completeness_mass)
                 {
-                    total_mergers += N_mergers[m][x];
-                    valid_halos += N_halos[m];
+                    double bin_rate = (double)N_mergers[m][x] / ((double)N_halos[m] * dz * dxi);
+                    rate_sum += bin_rate;
+                    valid_bins_count++;
                 }
             }
 
-            if (valid_halos == 0 || total_mergers == 0)
+            // Skip output if no mass bins are fully resolved at this xi
+            if (valid_bins_count == 0)
                 continue;
 
-            double rate = (double)total_mergers / ((double)valid_halos * dz * dxi);
+            double mean_rate = rate_sum / (double)valid_bins_count;
 
-            fprintf(fp, "%.8e %.8e\n", xi_center, rate);
+            if (mean_rate > 0.0)
+            {
+                fprintf(fp, "%.8e %.8e\n", xi_center, mean_rate);
+            }
         }
 
         fclose(fp);
