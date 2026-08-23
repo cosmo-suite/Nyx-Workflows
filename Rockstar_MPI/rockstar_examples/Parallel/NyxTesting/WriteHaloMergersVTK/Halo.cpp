@@ -860,8 +860,7 @@ void compute_mean_merger_rate()
      * --------------------------------------------------------
      */
     const double particle_mass = 6.5e5;                       // Particle mass (M_sun / h)
-    const double min_prog_mass = 40.0 * particle_mass;        // Hard 40-particle detection limit
-    const double completeness_mass = 1000.0 * particle_mass;  // 1000-particle threshold for complete subhalos
+    const double completeness_mass = 1000.0 * particle_mass; // 1000-particle completeness threshold (~6.5e8 M_sun/h)
 
     /*
      * --------------------------------------------------------
@@ -1017,8 +1016,8 @@ void compute_mean_merger_rate()
             {
                 double m2_mass = secondary->mvir;
 
-                // Resolution check on secondary progenitor
-                if (m2_mass < min_prog_mass)
+                // Strict resolution check on secondary progenitor mass
+                if (m2_mass < completeness_mass)
                     continue;
 
                 // Mass ratio xi = M_2 / M_1
@@ -1084,11 +1083,11 @@ void compute_mean_merger_rate()
                 if (N_halos[m] < MIN_HALOS)
                     continue;
 
-                // Representative descendant mass for bin m
-                double M_desc = sqrt(mass_bins[m] * mass_bins[m + 1]);
+                // Lower bound of descendant mass bin to guarantee full completeness across the bin
+                double M_min_bin = mass_bins[m];
 
-                // Verify secondary mass meets the completeness particle threshold
-                if (xi_center * M_desc >= completeness_mass)
+                // Verify that the minimum possible secondary in this bin meets the 1000-particle limit
+                if (xi_center * M_min_bin >= completeness_mass)
                 {
                     double bin_rate = (double)N_mergers[m][x] / ((double)N_halos[m] * dz * dxi);
                     rate_sum += bin_rate;
