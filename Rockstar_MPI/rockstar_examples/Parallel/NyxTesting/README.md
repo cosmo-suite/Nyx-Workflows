@@ -65,7 +65,7 @@ For this, the companion code of Rockstar - [consistent-trees](https://github.com
 git clone --recursive https://github.com/cosmo-suite/consistent-trees.git
 ```
 
-2. Generate the merger directory and `merger-tree.cfg. Execute this command from this directory. ie. the directory that contains the `OUTABSE` directory that contains the halos.`
+2. Generate the merger directory and `merger-tree.cfg`. Execute this command from this directory. ie. the directory that contains the `OUTBASE` directory that contains the halos.
 ```
 perl </path/to/mpi-rockstar>/scripts/gen_merger_cfg.pl <path-to-rockstar.cfg>
 ```
