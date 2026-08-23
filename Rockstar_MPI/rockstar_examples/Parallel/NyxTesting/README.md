@@ -73,7 +73,7 @@ The same configuration script (`.cfg`) should be used in the above command as in
 
 3. `EXTRA_PARAMS` need to be adjusted.
 
-3. Compile 
+3. Compile `consistent-trees` 
 ```
 cd consistent-trees
 make -j8
