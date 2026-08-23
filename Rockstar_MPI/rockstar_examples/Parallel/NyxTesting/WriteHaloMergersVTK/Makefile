@@ -1,21 +1,31 @@
-CFLAGS=-m64 -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wall
-OFLAGS = -lm -O3 -std=c99
-DEBUGFLAGS = -lm -g -O -std=c99
-PROFFLAGS = -lm -g -pg -O2 -std=c99
-CC = gcc
+CC       = mpicc
+CXX      = mpicxx
 
-all:
-	@make reg EXTRA_FLAGS="$(OFLAGS)"
+CFLAGS   = -m64 -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wall -O3 -std=c99
+CXXFLAGS = -m64 -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wall -O3 -std=c++17
+LDFLAGS  = -lm
 
-debug:
-	@make reg EXTRA_FLAGS="$(DEBUGFLAGS)"
+C_SRC    = read_tree.c stringparse.c check_syscalls.c
+CXX_SRC  = main.cpp
 
-prof:
-	@make reg EXTRA_FLAGS="$(PROFFLAGS)"
+C_OBJ    = $(C_SRC:.c=.o)
+CXX_OBJ  = $(CXX_SRC:.cpp=.o)
+OBJ      = $(C_OBJ) $(CXX_OBJ)
 
-reg:
-	$(CC) $(CFLAGS) main.c read_tree.c $(EXTRA_FLAGS) stringparse.c check_syscalls.c -o parse_trees.exe
+TARGET   = parse_trees.exe
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CXX) $(OBJ) $(LDFLAGS) -o $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f *~
-	rm -f parse_trees.exe
+	rm -f $(TARGET) $(OBJ) *~
+
+.PHONY: all clean
