@@ -91,8 +91,8 @@ perl do_merger_tree.pl <path-to-OUTBASE>/outputs/merger_tree.cfg
 This will generate the trees in the `OUTBASE/trees` directory. The trees are contained in a file named `tree_0_0_0.dat`. This is a serial code. It takes about 1-2 hours to generate the halo merger trees. The information encoded in the `tree_0_0_0.dat` is as follows. Each section is `#tree <descendant-halo-id>` for each of the halos in the very final snapshot. And under each of that section, the progenitors of that descendant halo will be written, and followed by the progenitors of the first progenitor, progenitors of the second progenitor, and so on.
 ```
 #tree <descendant-halo-id-1>
-Progentior 1 of desc-halo-id
-Progentior 2 of desc-halo-id
+Progenitor 1 of desc-halo-id
+Progenitor 2 of desc-halo-id
 Progenitor 3 of desc-halo-id
 .
 .
@@ -116,6 +116,21 @@ To post-process the halo merger code and visualize the halos
 cd WriteHaloMergersVTK
 ./parse_trees.exe <descendant-halo-id>
 ```
-To visualize the halo merging for a given descendant halo for a given halo id
+where `descendant-halo-id` is an id of a halo in the very last snapshot. This will produce a list of `.vtk` files. Each of those will contain the `x,y,z` locations of the center of the halos an its progenitors (not all the particles of the halos) at each redshift. ie. it will contain a list of `.vtk` like 
+```
+halo_merger_0.vtk
+halo_merger_1.vtk
+halo_merger_2.vtk
+.
+.
+.
+halo_merger_<N>.vtk
+```
+`halo_merger_0.vtk` will contain the root descendant halo only. 
+`halo_merger_1.vtk` will contain the root descendant halo and its progenitors.
+`halo_merger_2.vtk` will contain the root descendant halo and its progenitors, and the progenitors of the progenitors, and so on.
+So, `halo_merger_<N>.vtk` will contain all progenitor halos that contributed to the descendant halo id specified in the command line argument.
 
+
+So
 
