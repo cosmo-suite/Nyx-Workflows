@@ -130,7 +130,3 @@ halo_merger_<N>.vtk
 `halo_merger_1.vtk` will contain the root descendant halo and its progenitors.
 `halo_merger_2.vtk` will contain the root descendant halo and its progenitors, and the progenitors of the progenitors, and so on.
 So, `halo_merger_<N>.vtk` will contain all progenitor halos that contributed to the descendant halo id specified in the command line argument.
-
-
-So
-
