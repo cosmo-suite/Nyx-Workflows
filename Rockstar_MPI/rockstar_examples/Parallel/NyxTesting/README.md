@@ -107,8 +107,7 @@ All progentiors of progenitor 3
 .
 .
 .
- 
-```
+ ```
 
 
 ## 3. Post-processing halo mergers
