@@ -89,6 +89,27 @@ make -j8
 perl do_merger_tree.pl <path-to-OUTBASE>/outputs/merger_tree.cfg
 ```
 This will generate the trees in the `OUTBASE/trees` directory. The trees are contained in a file named `tree_0_0_0.dat`. This is a serial code. It takes about 1-2 hours to generate the halo merger trees. The information encoded in the `tree_0_0_0.dat` is as follows. Each section is `#tree <descendant-halo-id>` for each of the halos in the very final snapshot. And under each of that section, the progenitors of that descendant halo will be written, and followed by the progenitors of the first progenitor, progenitors of the second progenitor, and so on.
+```
+#tree <descendant-halo-id-1>
+Progentior 1 of desc-halo-id
+Progentior 2 of desc-halo-id
+Progenitor 3 of desc-halo-id
+.
+.
+.
+All progentiors of progenitor 1
+All progentiors of progenitor 2
+All progentiors of progenitor 3
+.
+.
+.
+#tree <descendant-halo-id-2>
+.
+.
+.
+ 
+```
+
 
 ## 3. Post-processing halo mergers
 To post-process the halo merger code and visualize the halos
