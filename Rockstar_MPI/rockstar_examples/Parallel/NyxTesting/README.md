@@ -18,7 +18,7 @@ This will produce the executable named `mpi-rockstar` in the mpi-rockstar direct
 4. To run mpi-rockstar fo Nyx snaphosts, 
 `cd rockstar_examples/Parallel/NyxTesting`
 
-5. Create a .cfg file like the ones provided in this folder
+5. Create a .cfg file like the ones provided in this folder - `rockstar_allsnapshots.cfg`.
 ```
 INBASE = <directory-containing-gadget-files>
 FILENAME = "nyx_snapshot.<snap>.<block>"
@@ -71,7 +71,12 @@ perl </path/to/mpi-rockstar>/scripts/gen_merger_cfg.pl <path-to-rockstar.cfg>
 ```
 The same configuration script (`.cfg`) should be used in the above command as in Step 5 above. This will create a directory named `outputs` in the `OUTBASE` directory, which will contain the `merger_tree.cfg` and `scales.txt` files. 
 
-3. `EXTRA_PARAMS` need to be adjusted.
+3. Two lines in the `OUTBASE/outputs/merger_tree` have to be replaced. See the `merger_tree.cfg` file provided in this directory. Copy the two lines 
+```
+EXTRA_PARAMS = 37
+EXTRA_PARAM_LABELS = "rs_klypin Mvir_all M200b M200c M500c M2500c Xoff Voff spin_bullock b_to_a c_to_a A[x] A[y] A[z] b_to_a(500c) c_to_a(500c) A[x](500c) A[y](500c) A[z](500c) T/|U| M_pe_Behroozi M_pe_Diemer Halfmass_Radius rvmax NFW_chi2 Ixx Iyy Izz Ixy Iyz Izx Ixx(500c) Iyy(500c) Izz(500c) Ixy(500c) Iyz(500c) Izx(500c)"
+``` 
+and replace the corresponding lines in `OUTBASE/outputs/merger_tree`. This is because the mpi-rockstar output writes a lot more parameters in the `out*.list` files, and these lines will tell the code how many to read. These are extra parameters which do not affect the halo merger, but need to be provided so that the halo merger code knows how to read the `out*.list` files.
 
 3. Compile `consistent-trees` 
 ```
@@ -84,3 +89,10 @@ make -j8
 perl do_merger_tree.pl <path-to-OUTBASE>/outputs/merger_tree.cfg
 ```
 This will generate the trees in the `OUTBASE/trees` directory. The trees are contained in a file named `tree_0_0_.dat`. This is a serial code. It takes a 1-2 hours to generate the halo merger trees.
+
+
+## 3. Post-processing halo mergers
+To post-process the halo merger code and visualize the halos
+```
+cd WriteHaloMergersVTK
+
