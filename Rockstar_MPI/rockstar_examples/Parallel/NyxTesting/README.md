@@ -135,5 +135,5 @@ So, `halo_merger_<N>.vtk` will contain all progenitor halos that contributed to 
 ## Visualizations
 
 ### Halo Merger Evolution and Mean Merger Rate
-<img src="./Images/halo_merger.gif" width="600" alt="Halo Merger"/> <img src="./Images/mean_merger_rate.png" width="600" alt="Mean Merger Rate"/>
+<img src="./Images/halo_merger.gif" width="600" alt="Halo Merger"/> <img src="./Images/mean_merger_rate.png" width="300" alt="Mean Merger Rate"/>
 
