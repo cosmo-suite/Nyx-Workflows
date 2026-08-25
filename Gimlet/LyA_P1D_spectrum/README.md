@@ -18,7 +18,7 @@ To use the Gimlet code to compute the power spectrum, first the Nyx plotfile has
 2. `make -j8`
 3. `srun -n <num_ranks> p1d_all_axes.ex <.h5-file> <output_spectrum.txt>`
  
-This will write the spectrum as a two column file with $k$ (s/km) and $kP(k)/\pi$. Note the factor of $\pi$ in the denominator. 
+This will write the spectrum as a two column file with $k$ (s/km) and $kP(k)/\pi$ (non-dimensional). Note the factor of $\pi$ in the denominator. 
 
 # 3. Comparison with DESI data
 
