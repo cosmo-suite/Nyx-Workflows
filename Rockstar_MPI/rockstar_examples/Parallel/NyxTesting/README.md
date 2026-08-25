@@ -133,7 +133,7 @@ So, `halo_merger_<N>.vtk` will contain all progenitor halos that contributed to 
 
 
 ## Visualizations
-
+The animation below shows all the progenitors of a descendant halo at `z=2.0`. At each redshift the all the progenitors and its descendant halos are shown, which means that at the last redshift `z=15.0`, the frame shows all the progenitor halos that contributed to the descendant halo at `z=2.0`.
 ### Halo Merger Evolution and Mean Merger Rate
 <img src="./Images/halo_merger.gif" width="500" alt="Halo Merger"/> <img src="./Images/mean_merger_rate.png" width="400" alt="Mean Merger Rate"/>
 
