@@ -27,6 +27,7 @@ This will write the spectrum as a two column file with $k$ (s/km) and $kP(k)/\pi
 wget https://zenodo.org/records/17100543/files/zenodo_p1d_fft_y1.zip
 ```
 The DESI data contains a `.fits` file with the data.
+
 2. Plot the computed spectrum and DESI data.
 ```
 Plot_P1D_comparison_DESI.py --desi-data=<path-to-DESI-fits-file> --nyx-data=<path-to-txt-file-from-Step2> --z-target=<redshift-value> --output=<plotfilename.png>
