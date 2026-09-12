@@ -15,156 +15,151 @@ import matplotlib.pyplot as plt
 
 def read_halo_file(filename):
 
-    halos = []
+	halos = []
 
-    with open(filename, "r", encoding="ascii") as f:
+	with open(filename, "r", encoding="ascii") as f:
 
-        x_idx = None
-        y_idx = None
-        z_idx = None
-        mvir_idx = None
+		x_idx = None
+		y_idx = None
+		z_idx = None
+		mvir_idx = None
 
-        for line in f:
+		for line in f:
 
-            # Rockstar column header
-            if line.startswith("#id "):
+			# Rockstar column header
+			if line.startswith("#id "):
 
-                columns = line[1:].split()
+				columns = line[1:].split()
 
-                x_idx = columns.index("x")
-                y_idx = columns.index("y")
-                z_idx = columns.index("z")
-                mvir_idx = columns.index("mvir")
+				x_idx = columns.index("x")
+				y_idx = columns.index("y")
+				z_idx = columns.index("z")
+				mvir_idx = columns.index("mvir")
 
-                continue
+				continue
 
-            # Skip comments and blank lines
-            if line.startswith("#") or not line.strip():
-                continue
+			# Skip comments and blank lines
+			if line.startswith("#") or not line.strip():
+				continue
 
-            values = line.split()
+			values = line.split()
 
-            x = float(values[x_idx])
-            y = float(values[y_idx])
-            z = float(values[z_idx])
-            mvir = float(values[mvir_idx])
+			x = float(values[x_idx])
+			y = float(values[y_idx])
+			z = float(values[z_idx])
+			mvir = float(values[mvir_idx])
 
-            halos.append((x, y, z, mvir))
+			halos.append((x, y, z, mvir))
 
-    return halos
+	return halos
 
 
 # =============================================================
-# Check whether file is a Rockstar ASCII halo catalog
+# Check whether file is a Rockstar ASCII halo file
 # =============================================================
 
 def is_rockstar_ascii_file(filename):
 
-    try:
+	try:
 
-        with open(filename, "r", encoding="ascii") as f:
+		with open(filename, "r", encoding="ascii") as f:
 
-            for line in f:
+			for line in f:
 
-                if line.startswith("#id "):
-                    return True
+				if line.startswith("#id "):
+					return True
 
-                if f.tell() > 10000:
-                    break
+				if f.tell() > 10000:
+					break
 
-    except (UnicodeDecodeError, OSError):
+	except (UnicodeDecodeError, OSError):
 
-        return False
+		return False
 
-    return False
-
+	return False
 
 # =============================================================
-# Read all halo files in one directory
+# Read all Rockstar files for one snapshot
 # =============================================================
 
-def read_halo_directory(directory, redshift):
+def read_halo_snapshot(halos_dir, snapshot_id, redshift):
 
-    files = sorted(
-        f
-        for f in glob.glob(
-            os.path.join(directory, "*")
-        )
-        if os.path.isfile(f)
-    )
+	pattern = os.path.join(
+		halos_dir,
+		f"halos_{snapshot_id}.*.ascii"
+	)
 
-    if not files:
+	files = sorted(glob.glob(pattern))
 
-        raise RuntimeError(
-            f"No files found in directory: {directory}"
-        )
+	if not files:
+		raise RuntimeError(
+			f"No Rockstar ASCII files found for snapshot {snapshot_id}.\n"
+			f"Expected files matching: {pattern}"
+		)
 
-    print()
-    print("=" * 70)
-    print(f"Reading halos at z = {redshift}")
-    print(f"Directory: {directory}")
-    print("=" * 70)
+	print()
+	print("=" * 70)
+	print(f"Reading halos for snapshot = {snapshot_id}, z = {redshift}")
+	print(f"Directory: {halos_dir}")
+	print(f"Pattern: {pattern}")
+	print("=" * 70)
 
-    all_halos = []
+	all_halos = []
 
-    for filename in files:
+	for filename in files:
 
-        basename = os.path.basename(filename)
+		basename = os.path.basename(filename)
 
-        if not is_rockstar_ascii_file(filename):
+		if not is_rockstar_ascii_file(filename):
 
-            print(f"Skipping: {basename}")
-            continue
+			print(f"Skipping: {basename}")
+			continue
 
-        try:
+		try:
 
-            halos = read_halo_file(filename)
+			halos = read_halo_file(filename)
 
-        except (ValueError, IndexError) as e:
+		except (ValueError, IndexError) as e:
 
-            print(
-                f"Skipping malformed file: {basename}"
-            )
+			print(f"Skipping malformed file: {basename}")
+			print(f"  Error: {e}")
+			continue
 
-            print(f"  Error: {e}")
+		print(
+			f"Reading: {basename} "
+			f"({len(halos)} halos)"
+		)
 
-            continue
+		all_halos.extend(halos)
 
-        print(
-            f"Reading: {basename} "
-            f"({len(halos)} halos)"
-        )
+	if not all_halos:
+		raise RuntimeError(
+			f"No Rockstar halos found for snapshot {snapshot_id} "
+			f"in {halos_dir}"
+		)
 
-        all_halos.extend(halos)
+	masses = np.array(
+		[halo[3] for halo in all_halos],
+		dtype=np.float64
+	)
 
-    if not all_halos:
+	print()
+	print(
+		f"snapshot = {snapshot_id}, z = {redshift}: "
+		f"{len(all_halos)} halos"
+	)
 
-        raise RuntimeError(
-            f"No Rockstar halos found in {directory}"
-        )
+	print(
+		f"Minimum mass = "
+		f"{masses.min():.6e} Msun/h"
+	)
 
-    masses = np.array(
-        [halo[3] for halo in all_halos],
-        dtype=np.float64
-    )
+	print(
+		f"Maximum mass = "
+		f"{masses.max():.6e} Msun/h"
+	)
 
-    print()
-    print(
-        f"z = {redshift}: "
-        f"{len(all_halos)} halos"
-    )
-
-    print(
-        f"Minimum mass = "
-        f"{masses.min():.6e} Msun/h"
-    )
-
-    print(
-        f"Maximum mass = "
-        f"{masses.max():.6e} Msun/h"
-    )
-
-    return all_halos, masses
+	return all_halos, masses
 
 
 # =============================================================
@@ -173,64 +168,64 @@ def read_halo_directory(directory, redshift):
 
 def write_vtk(filename, halos):
 
-    n = len(halos)
+	n = len(halos)
 
-    with open(filename, "w") as f:
+	with open(filename, "w") as f:
 
-        f.write("# vtk DataFile Version 3.0\n")
-        f.write("Rockstar Halo Centers\n")
-        f.write("ASCII\n")
-        f.write("DATASET POLYDATA\n")
+		f.write("# vtk DataFile Version 3.0\n")
+		f.write("Rockstar Halo Centers\n")
+		f.write("ASCII\n")
+		f.write("DATASET POLYDATA\n")
 
-        # -----------------------------------------------------
-        # Points
-        # -----------------------------------------------------
+		# -----------------------------------------------------
+		# Points
+		# -----------------------------------------------------
 
-        f.write(f"POINTS {n} float\n")
+		f.write(f"POINTS {n} float\n")
 
-        for x, y, z, mvir in halos:
+		for x, y, z, mvir in halos:
 
-            f.write(
-                f"{x:.8e} "
-                f"{y:.8e} "
-                f"{z:.8e}\n"
-            )
+			f.write(
+				f"{x:.8e} "
+				f"{y:.8e} "
+				f"{z:.8e}\n"
+			)
 
-        # -----------------------------------------------------
-        # Vertices
-        # -----------------------------------------------------
+		# -----------------------------------------------------
+		# Vertices
+		# -----------------------------------------------------
 
-        f.write(
-            f"VERTICES {n} {2 * n}\n"
-        )
+		f.write(
+			f"VERTICES {n} {2 * n}\n"
+		)
 
-        for i in range(n):
+		for i in range(n):
 
-            f.write(
-                f"1 {i}\n"
-            )
+			f.write(
+				f"1 {i}\n"
+			)
 
-        # -----------------------------------------------------
-        # Halo mass scalar
-        # -----------------------------------------------------
+		# -----------------------------------------------------
+		# Halo mass scalar
+		# -----------------------------------------------------
 
-        f.write(
-            f"\nPOINT_DATA {n}\n"
-        )
+		f.write(
+			f"\nPOINT_DATA {n}\n"
+		)
 
-        f.write(
-            "SCALARS mvir float 1\n"
-        )
+		f.write(
+			"SCALARS mvir float 1\n"
+		)
 
-        f.write(
-            "LOOKUP_TABLE default\n"
-        )
+		f.write(
+			"LOOKUP_TABLE default\n"
+		)
 
-        for x, y, z, mvir in halos:
+		for x, y, z, mvir in halos:
 
-            f.write(
-                f"{mvir:.8e}\n"
-            )
+			f.write(
+				f"{mvir:.8e}\n"
+			)
 
 
 # =============================================================
@@ -239,30 +234,30 @@ def write_vtk(filename, halos):
 
 def compute_hmf(masses, volume, bins):
 
-    log_mass = np.log10(masses)
+	log_mass = np.log10(masses)
 
-    counts, edges = np.histogram(
-        log_mass,
-        bins=bins
-    )
+	counts, edges = np.histogram(
+		log_mass,
+		bins=bins
+	)
 
-    dlogM = edges[1] - edges[0]
+	dlogM = edges[1] - edges[0]
 
-    centers = 0.5 * (
-        edges[:-1] + edges[1:]
-    )
+	centers = 0.5 * (
+		edges[:-1] + edges[1:]
+	)
 
-    hmf = counts / (
-        volume * dlogM
-    )
+	hmf = counts / (
+		volume * dlogM
+	)
 
-    mask = counts > 0
+	mask = counts > 0
 
-    return (
-        centers[mask],
-        hmf[mask],
-        counts[mask]
-    )
+	return (
+		centers[mask],
+		hmf[mask],
+		counts[mask]
+	)
 
 
 # =============================================================
@@ -271,7 +266,7 @@ def compute_hmf(masses, volume, bins):
 
 def growth_factor(z):
 
-    return 1.0 / (1.0 + z)
+	return 1.0 / (1.0 + z)
 
 
 # =============================================================
@@ -279,20 +274,20 @@ def growth_factor(z):
 # =============================================================
 
 def sigma_M(
-    mass,
-    z,
-    sigma8=0.8,
-    M8=1.0e14,
-    alpha=0.3
+	mass,
+	z,
+	sigma8=0.8,
+	M8=1.0e14,
+	alpha=0.3
 ):
 
-    D = growth_factor(z)
+	D = growth_factor(z)
 
-    return (
-        sigma8
-        * D
-        * (mass / M8) ** (-alpha)
-    )
+	return (
+		sigma8
+		* D
+		* (mass / M8) ** (-alpha)
+	)
 
 
 # =============================================================
@@ -301,196 +296,194 @@ def sigma_M(
 
 def sheth_tormen_hmf(mass, z):
 
-    A = 0.3222
-    a = 0.707
-    p = 0.3
+	A = 0.3222
+	a = 0.707
+	p = 0.3
 
-    sig = sigma_M(
-        mass,
-        z
-    )
+	sig = sigma_M(
+		mass,
+		z
+	)
 
-    dlns_dlnm = -0.3
+	dlns_dlnm = -0.3
 
-    nu = np.sqrt(a) / sig
+	nu = np.sqrt(a) / sig
 
-    f_nu = (
-        A
-        * np.sqrt(2.0 / np.pi)
-        * nu
-        * np.exp(-0.5 * nu**2)
-        * (
-            1.0
-            + nu ** (-2.0 * p)
-        )
-    )
+	f_nu = (
+		A
+		* np.sqrt(2.0 / np.pi)
+		* nu
+		* np.exp(-0.5 * nu**2)
+		* (
+			1.0
+			+ nu ** (-2.0 * p)
+		)
+	)
 
-    # Cosmology
-    Omega_m = 0.31
+	# Cosmology
+	Omega_m = 0.31
 
-    # rho_m:
-    #
-    # (Msun/h) / (Mpc/h)^3
-    #
+	# rho_m:
+	#
+	# (Msun/h) / (Mpc/h)^3
+	#
 
-    rho_m = Omega_m * 2.775e11
+	rho_m = Omega_m * 2.775e11
 
-    dn_dlnM = (
-        rho_m / mass
-        * f_nu
-        * abs(dlns_dlnm)
-    )
+	dn_dlnM = (
+		rho_m / mass
+		* f_nu
+		* abs(dlns_dlnm)
+	)
 
-    # Convert dn/dlnM to dn/dlog10(M)
+	# Convert dn/dlnM to dn/dlog10(M)
 
-    dn_dlogM = (
-        dn_dlnM
-        * np.log(10.0)
-    )
+	dn_dlogM = (
+		dn_dlnM
+		* np.log(10.0)
+	)
 
-    return dn_dlogM
-
+	return dn_dlogM
 
 # =============================================================
-# Get numbered directory/redshift pairs
+# Get numbered snapshot-id/redshift pairs
 # =============================================================
 
 def get_snapshots(args):
 
-    halo_dirs = {}
-    redshifts = {}
+	snapshot_ids = {}
+	redshifts = {}
 
-    # ---------------------------------------------------------
-    # Collect halo directories
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Collect snapshot IDs
+	# ---------------------------------------------------------
 
-    for key, value in vars(args).items():
+	for key, value in vars(args).items():
 
-        match = re.match(
-            r"halos_dir_(\d+)$",
-            key
-        )
+		match = re.match(
+			r"snapshot_id_(\d+)$",
+			key
+		)
 
-        if match is not None and value is not None:
+		if match is not None and value is not None:
 
-            number = int(match.group(1))
+			number = int(match.group(1))
 
-            halo_dirs[number] = value
+			snapshot_ids[number] = value
 
-    # ---------------------------------------------------------
-    # Collect redshifts
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Collect redshifts
+	# ---------------------------------------------------------
 
-    for key, value in vars(args).items():
+	for key, value in vars(args).items():
 
-        match = re.match(
-            r"redshift_(\d+)$",
-            key
-        )
+		match = re.match(
+			r"redshift_(\d+)$",
+			key
+		)
 
-        if match is not None and value is not None:
+		if match is not None and value is not None:
 
-            number = int(match.group(1))
+			number = int(match.group(1))
 
-            redshifts[number] = value
+			redshifts[number] = value
 
-    # ---------------------------------------------------------
-    # Check at least one pair
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Check at least one pair
+	# ---------------------------------------------------------
 
-    if not halo_dirs and not redshifts:
+	if not snapshot_ids and not redshifts:
 
-        raise RuntimeError(
-            "No --halos-dir-N / --redshift-N pairs were supplied."
-        )
+		raise RuntimeError(
+			"No --snapshot-id-N / --redshift-N pairs were supplied."
+		)
 
-    # ---------------------------------------------------------
-    # Check number of directories and redshifts
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Check number of snapshot IDs and redshifts
+	# ---------------------------------------------------------
 
-    if len(halo_dirs) != len(redshifts):
+	if len(snapshot_ids) != len(redshifts):
 
-        raise RuntimeError(
-            "\nMismatch between halo directories and redshifts:\n"
-            f"  Number of halo directories = {len(halo_dirs)}\n"
-            f"  Number of redshifts        = {len(redshifts)}\n"
-            "\n"
-            "Every --halos-dir-N must have a corresponding "
-            "--redshift-N."
-        )
+		raise RuntimeError(
+			"\nMismatch between snapshot IDs and redshifts:\n"
+			f"  Number of snapshot IDs = {len(snapshot_ids)}\n"
+			f"  Number of redshifts	= {len(redshifts)}\n"
+			"\n"
+			"Every --snapshot-id-N must have a corresponding "
+			"--redshift-N."
+		)
 
-    # ---------------------------------------------------------
-    # Check matching indices
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Check matching indices
+	# ---------------------------------------------------------
 
-    halo_numbers = set(halo_dirs.keys())
-    redshift_numbers = set(redshifts.keys())
+	snapshot_numbers = set(snapshot_ids.keys())
+	redshift_numbers = set(redshifts.keys())
 
-    missing_redshifts = (
-        halo_numbers - redshift_numbers
-    )
+	missing_redshifts = (
+		snapshot_numbers - redshift_numbers
+	)
 
-    missing_directories = (
-        redshift_numbers - halo_numbers
-    )
+	missing_snapshot_ids = (
+		redshift_numbers - snapshot_numbers
+	)
 
-    if missing_redshifts:
+	if missing_redshifts:
 
-        raise RuntimeError(
-            "Missing redshift(s) for: "
-            + ", ".join(
-                f"--halos-dir-{n}"
-                for n in sorted(missing_redshifts)
-            )
-        )
+		raise RuntimeError(
+			"Missing redshift(s) for: "
+			+ ", ".join(
+				f"--snapshot-id-{n}"
+				for n in sorted(missing_redshifts)
+			)
+		)
 
-    if missing_directories:
+	if missing_snapshot_ids:
 
-        raise RuntimeError(
-            "Missing halo director(y/ies) for: "
-            + ", ".join(
-                f"--redshift-{n}"
-                for n in sorted(missing_directories)
-            )
-        )
+		raise RuntimeError(
+			"Missing snapshot ID(s) for: "
+			+ ", ".join(
+				f"--redshift-{n}"
+				for n in sorted(missing_snapshot_ids)
+			)
+		)
 
-    # ---------------------------------------------------------
-    # Check contiguous numbering
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Check contiguous numbering
+	# ---------------------------------------------------------
 
-    numbers = sorted(halo_numbers)
+	numbers = sorted(snapshot_numbers)
 
-    expected_numbers = list(
-        range(1, len(numbers) + 1)
-    )
+	expected_numbers = list(
+		range(1, len(numbers) + 1)
+	)
 
-    if numbers != expected_numbers:
+	if numbers != expected_numbers:
 
-        raise RuntimeError(
-            "\nSnapshot numbering must be contiguous "
-            "starting from 1.\n"
-            f"Specified: {numbers}\n"
-            f"Expected:  {expected_numbers}\n"
-        )
+		raise RuntimeError(
+			"\nSnapshot numbering must be contiguous "
+			"starting from 1.\n"
+			f"Specified: {numbers}\n"
+			f"Expected:  {expected_numbers}\n"
+		)
 
-    # ---------------------------------------------------------
-    # Construct snapshot list
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Construct snapshot list
+	# ---------------------------------------------------------
 
-    snapshots = []
+	snapshots = []
 
-    for number in numbers:
+	for number in numbers:
 
-        snapshots.append(
-            (
-                number,
-                halo_dirs[number],
-                float(redshifts[number])
-            )
-        )
+		snapshots.append(
+			(
+				number,
+				snapshot_ids[number],
+				float(redshifts[number])
+			)
+		)
 
-    return snapshots
-
+	return snapshots
 
 # =============================================================
 # Format redshift for filenames
@@ -498,11 +491,11 @@ def get_snapshots(args):
 
 def redshift_string(redshift):
 
-    if redshift.is_integer():
+	if redshift.is_integer():
 
-        return str(int(redshift))
+		return str(int(redshift))
 
-    return str(redshift)
+	return str(redshift)
 
 
 # =============================================================
@@ -510,118 +503,118 @@ def redshift_string(redshift):
 # =============================================================
 
 def plot_hmf(
-    masses,
-    redshift,
-    volume,
-    bins
+	masses,
+	redshift,
+	volume,
+	bins
 ):
 
-    logM, hmf, counts = compute_hmf(
-        masses,
-        volume,
-        bins
-    )
+	logM, hmf, counts = compute_hmf(
+		masses,
+		volume,
+		bins
+	)
 
-    # ---------------------------------------------------------
-    # Sheth-Tormen
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Sheth-Tormen
+	# ---------------------------------------------------------
 
-    m_eval = np.logspace(
-        bins[0],
-        bins[-1],
-        400
-    )
+	m_eval = np.logspace(
+		bins[0],
+		bins[-1],
+		400
+	)
 
-    st = sheth_tormen_hmf(
-        m_eval,
-        redshift
-    )
+	st = sheth_tormen_hmf(
+		m_eval,
+		redshift
+	)
 
-    # ---------------------------------------------------------
-    # Plot
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Plot
+	# ---------------------------------------------------------
 
-    plt.figure(
-        figsize=(9, 7)
-    )
+	plt.figure(
+		figsize=(9, 7)
+	)
 
-    plt.loglog(
-        10.0 ** logM,
-        hmf,
-        marker="o",
-        markersize=4,
-        linewidth=1.5,
-        label="Rockstar"
-    )
+	plt.loglog(
+		10.0 ** logM,
+		hmf,
+		marker="o",
+		markersize=4,
+		linewidth=1.5,
+		label="Rockstar"
+	)
 
-    plt.loglog(
-        m_eval,
-        st,
-        linestyle="--",
-        linewidth=2,
-        label="Sheth-Tormen"
-    )
+	plt.loglog(
+		m_eval,
+		st,
+		linestyle="--",
+		linewidth=2,
+		label="Sheth-Tormen"
+	)
 
-    # ---------------------------------------------------------
-    # Formatting
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Formatting
+	# ---------------------------------------------------------
 
-    plt.xlabel(
-        r"Halo mass [$M_\odot/h$]"
-    )
+	plt.xlabel(
+		r"Halo mass [$M_\odot/h$]"
+	)
 
-    plt.ylabel(
-        r"$dn/d\log_{10}M$ "
-        r"[$(h^{-1}{\rm Mpc})^{-3}$]"
-    )
+	plt.ylabel(
+		r"$dn/d\log_{10}M$ "
+		r"[$(h^{-1}{\rm Mpc})^{-3}$]"
+	)
 
-    plt.title(
-        f"Halo Mass Function — z = {redshift:g}"
-    )
+	plt.title(
+		f"Halo Mass Function — z = {redshift:g}"
+	)
 
-    plt.xlim(
-        10.0 ** bins[0],
-        10.0 ** bins[-1]
-    )
+	plt.xlim(
+		10.0 ** bins[0],
+		10.0 ** bins[-1]
+	)
 
-    plt.ylim(
-        1e-4,
-        None
-    )
+	plt.ylim(
+		1e-4,
+		None
+	)
 
-    plt.grid(
-        True,
-        which="both",
-        linestyle="--",
-        alpha=0.5
-    )
+	plt.grid(
+		True,
+		which="both",
+		linestyle="--",
+		alpha=0.5
+	)
 
-    plt.legend()
+	plt.legend()
 
-    plt.tight_layout()
+	plt.tight_layout()
 
-    # ---------------------------------------------------------
-    # Output filename
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Output filename
+	# ---------------------------------------------------------
 
-    z_string = redshift_string(
-        redshift
-    )
+	z_string = redshift_string(
+		redshift
+	)
 
-    output_filename = (
-        f"hmf_z_eq_{z_string}.png"
-    )
+	output_filename = (
+		f"hmf_z_eq_{z_string}.png"
+	)
 
-    plt.savefig(
-        output_filename,
-        dpi=200
-    )
+	plt.savefig(
+		output_filename,
+		dpi=200
+	)
 
-    plt.close()
+	plt.close()
 
-    print(
-        f"Saved HMF plot: {output_filename}"
-    )
+	print(
+		f"Saved HMF plot: {output_filename}"
+	)
 
 
 # =============================================================
@@ -630,119 +623,116 @@ def plot_hmf(
 
 def main():
 
-    parser = argparse.ArgumentParser(
-        description=(
-            "Read Rockstar halo catalogs from an arbitrary "
-            "number of directories, write VTK files, and "
-            "generate one HMF plot per redshift."
-        )
-    )
+	parser = argparse.ArgumentParser(
+		description=(
+			"Read Rockstar halo catalogs matching "
+			"halos_<snapshot-id>.*.ascii and generate "
+			"one HMF plot per redshift."
+		)
+	)
 
-    # ---------------------------------------------------------
-    # Allow up to 50 snapshots
-    # ---------------------------------------------------------
+	# ---------------------------------------------------------
+	# Allow up to 50 snapshots
+	# ---------------------------------------------------------
 
-    for i in range(1, 51):
+	for i in range(1, 51):
 
-        parser.add_argument(
-            f"--halos-dir-{i}",
-            dest=f"halos_dir_{i}",
-            default=None,
-            help=f"Rockstar halo directory #{i}"
-        )
+		parser.add_argument(
+			f"--snapshot-id-{i}",
+			dest=f"snapshot_id_{i}",
+			default=None,
+			help=f"Snapshot ID #{i}"
+		)
 
-        parser.add_argument(
-            f"--redshift-{i}",
-            dest=f"redshift_{i}",
-            type=float,
-            default=None,
-            help=f"Redshift corresponding to directory #{i}"
-        )
+		parser.add_argument(
+			f"--redshift-{i}",
+			dest=f"redshift_{i}",
+			type=float,
+			default=None,
+			help=f"Redshift corresponding to snapshot #{i}"
+		)
 
-    parser.add_argument(
-        "--box-size",
-        type=float,
-        default=20.0,
-        help="Box size in Mpc/h (default: 20)"
-    )
+	parser.add_argument(
+		"--box-size",
+		type=float,
+		default=20.0,
+		help="Box size in Mpc/h (default: 20)"
+	)
 
-    args = parser.parse_args()
+	parser.add_argument(
+		"--halos-dir",
+		required=True,
+		help="Directory containing the Rockstar ASCII halo files"
+	)
 
-    # =========================================================
-    # Get snapshots
-    # =========================================================
+	args = parser.parse_args()
 
-    snapshots = get_snapshots(args)
+	# =========================================================
+	# Get snapshots
+	# =========================================================
 
-    print()
-    print(
-        f"Found {len(snapshots)} halo directories."
-    )
+	snapshots = get_snapshots(args)
 
-    # =========================================================
-    # Volume
-    # =========================================================
+	print()
+	print(
+		f"Found {len(snapshots)} snapshot(s)."
+	)
 
-    volume = args.box_size ** 3
+	# =========================================================
+	# Volume
+	# =========================================================
 
-    # =========================================================
-    # Same mass bins for every redshift
-    # =========================================================
+	volume = args.box_size ** 3
 
-    bins = np.linspace(
-        7.0,
-        13.5,
-        35
-    )
+	# =========================================================
+	# Same mass bins for every redshift
+	# =========================================================
 
-    # =========================================================
-    # Process snapshots
-    # =========================================================
+	bins = np.linspace(
+		7.0,
+		13.5,
+		35
+	)
 
-    for number, directory, redshift in snapshots:
+	for number, snapshot_id, redshift in snapshots:
 
-        # -----------------------------------------------------
-        # Read halos
-        # -----------------------------------------------------
+		halos, masses = read_halo_snapshot(args.halos_dir,
+										   snapshot_id,
+										   redshift)
 
-        halos, masses = read_halo_directory(
-            directory,
-            redshift
-        )
+		# -----------------------------------------------------
+		# Write VTK
+		# -----------------------------------------------------
 
-        # -----------------------------------------------------
-        # Write VTK
-        # -----------------------------------------------------
+		z_string = redshift_string(
+			redshift
+		)
 
-        z_string = redshift_string(
-            redshift
-        )
+		vtk_filename = (
+			f"halos_{snapshot_id}_z_eq_{z_string}.vtk"
+		)
 
-        vtk_filename = (
-            f"halos_z_eq_{z_string}.vtk"
-        )
+		write_vtk(
+			vtk_filename,
+			halos
+		)
 
-        write_vtk(
-            vtk_filename,
-            halos
-        )
+		print(
+			f"Wrote: {vtk_filename}"
+		)
 
-        print(
-            f"Wrote: {vtk_filename}"
-        )
+		# -----------------------------------------------------
+		# Plot HMF
+		# -----------------------------------------------------
 
-        # -----------------------------------------------------
-        # Plot HMF
-        # -----------------------------------------------------
-
-        plot_hmf(
-            masses,
-            redshift,
-            volume,
-            bins
-        )
+		plot_hmf(
+			masses,
+			redshift,
+			volume,
+			bins
+		)
 
 
 if __name__ == "__main__":
-    main()
+	main()
 
