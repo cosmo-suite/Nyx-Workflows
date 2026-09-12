@@ -31,7 +31,9 @@ OUTBASE = <output-directory>
 With the above string for the `FILENAME`, the gadget filenames has to be of the form `nyx_snapshot.005.0`, `nyx_snapshot.005.1` etc., where 5 is the snapshot id and 0, 1 are the block id.
 
 5. Run
-`mpirun -np <num_ranks> mpi-rockstar -c <.cfg-file>`
+```
+mpirun -np <num_ranks> mpi-rockstar -c <.cfg-file>
+```
 This will write the halo.bin files and halo.ascii files into the `OUTBASE` directory. There will be as many `.bin` and `.ascii` files as the number of MPI ranks for each snapshot. The `.ascii` files contain a summary of the halos, and `.bin` contains the particles that form each of the halos. An example of the `.cfg` file is given in `rockstar_allsnapshots.cfg`. For a $$1024^3$$ particle snapshot, it takes about 5-10 minutes to compute the halos for that snapshot on 256 MPI ranks.
 
 6. To visualize the halos
