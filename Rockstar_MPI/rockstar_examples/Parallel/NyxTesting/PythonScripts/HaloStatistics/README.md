@@ -15,13 +15,23 @@ The `HaloStatistics.py` script reads Rockstar ASCII halo files, aggregates halo 
 You can run the script directly using `python3`:
 
 ```bash
-python3 HaloStatistics.py --halos-dir <path_to_halos> --snapshot-id-1 <id> --redshift-1 <z> [--box-size <size>]
+python3 HaloStatistics.py \
+--halos-dir-1=<path_to_halos-1> \
+--halos-dir-2=<path_to_halos-2> \
+--halos-dir-3=<path_to_halos-3> \
+--snapshot-id-1 <id-1> \
+--snapshot-id-2 <id-2> \
+--snapshot-id-3 <id-3> \
+--redshift-1 <z-1> \
+--redshift-2 <z-2> \
+--redshift-3 <z-3> \
+--box-size <size>
 ```
 
 #### Inputs
-- `--halos-dir` (Required): Path to the directory containing the Rockstar ASCII halo files (matching the pattern `halos_<snapshot-id>.*.ascii`).
-- `--snapshot-id-N` and `--redshift-N` (Pairs): The snapshot ID and its corresponding redshift. You can specify up to 50 snapshot pairs (e.g., `--snapshot-id-1`, `--redshift-1`, `--snapshot-id-2`, `--redshift-2`, etc.).
-- `--box-size` (Optional): The simulation box size in Mpc/h. Defaults to `20.0`.
+- `--halos-dir-1` (Required): Path to the directory containing the Rockstar ASCII halo files (matching the pattern `halos_<snapshot-id>.*.ascii`).
+- `--snapshot-id-N` and `--redshift-N` (any number of pairs): The snapshot ID and its corresponding redshift. You can specify up to 50 snapshot pairs (e.g., `--snapshot-id-1`, `--redshift-1`, `--snapshot-id-2`, `--redshift-2`, etc.).
+- `--box-size` (Required): The simulation box size in Mpc/h. Defaults to `20.0`.
 
 #### Outputs
 For each snapshot provided, the script produces:
