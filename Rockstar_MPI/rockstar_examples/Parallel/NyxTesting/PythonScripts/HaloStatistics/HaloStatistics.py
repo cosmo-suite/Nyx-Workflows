@@ -293,11 +293,21 @@ def sheth_tormen_hmf(mass, z):
 #   --halos-dir-2
 #   ...
 #
-# and similarly for snapshot IDs and redshifts.
+#   --snapshot-id-1
+#   --snapshot-id-2
+#   ...
+#
+#   --redshift-1
+#   --redshift-2
+#   ...
+#
+#   --legend-1
+#   --legend-2
+#   ...
 #
 # The arguments are dynamically registered based on what
 # appears on the command line, so there is no arbitrary
-# 50-snapshot limit.
+# snapshot limit.
 # =============================================================
 
 def add_numbered_arguments(parser, argv):
@@ -306,12 +316,14 @@ def add_numbered_arguments(parser, argv):
         "halos-dir": r"^--halos-dir-(\d+)(?:=.*)?$",
         "snapshot-id": r"^--snapshot-id-(\d+)(?:=.*)?$",
         "redshift": r"^--redshift-(\d+)(?:=.*)?$",
+        "legend": r"^--legend-(\d+)(?:=.*)?$",
     }
 
     numbers = {
         "halos-dir": set(),
         "snapshot-id": set(),
         "redshift": set(),
+        "legend": set(),
     }
 
     for arg in argv:
@@ -352,9 +364,16 @@ def add_numbered_arguments(parser, argv):
             help=f"Redshift #{number}"
         )
 
+        parser.add_argument(
+            f"--legend-{number}",
+            dest=f"legend_{number}",
+            default=None,
+            help=f"Legend for HMF #{number}"
+        )
+
 
 # =============================================================
-# Get numbered halo-dir / snapshot-id / redshift sets
+# Get numbered halo-dir / snapshot-id / redshift / legend sets
 # =============================================================
 
 def get_snapshots(args):
@@ -362,6 +381,7 @@ def get_snapshots(args):
     halos_dirs = {}
     snapshot_ids = {}
     redshifts = {}
+    legends = {}
 
     # ---------------------------------------------------------
     # Collect all numbered arguments
@@ -399,27 +419,45 @@ def get_snapshots(args):
             redshifts[int(match.group(1))] = value
             continue
 
+        match = re.match(
+            r"legend_(\d+)$",
+            key
+        )
+
+        if match:
+            legends[int(match.group(1))] = value
+            continue
+
     # ---------------------------------------------------------
     # Make sure at least one set was supplied
     # ---------------------------------------------------------
 
-    if not halos_dirs and not snapshot_ids and not redshifts:
+    if (
+        not halos_dirs
+        and not snapshot_ids
+        and not redshifts
+        and not legends
+    ):
 
         raise RuntimeError(
             "No --halos-dir-N / --snapshot-id-N / "
-            "--redshift-N inputs were supplied."
+            "--redshift-N / --legend-N inputs were supplied."
         )
 
     # ---------------------------------------------------------
-    # Check that all three have the same number of values
+    # Check that all four have the same number of values
     # ---------------------------------------------------------
 
     n_dirs = len(halos_dirs)
     n_snapshots = len(snapshot_ids)
     n_redshifts = len(redshifts)
+    n_legends = len(legends)
 
     if not (
-        n_dirs == n_snapshots == n_redshifts
+        n_dirs
+        == n_snapshots
+        == n_redshifts
+        == n_legends
     ):
 
         raise RuntimeError(
@@ -427,9 +465,10 @@ def get_snapshots(args):
             f"  Number of halo directories = {n_dirs}\n"
             f"  Number of snapshot IDs     = {n_snapshots}\n"
             f"  Number of redshifts        = {n_redshifts}\n"
+            f"  Number of legends         = {n_legends}\n"
             "\n"
             "Every halo directory must have a corresponding "
-            "snapshot ID and redshift."
+            "snapshot ID, redshift, and legend."
         )
 
     # ---------------------------------------------------------
@@ -439,11 +478,13 @@ def get_snapshots(args):
     dir_numbers = set(halos_dirs.keys())
     snapshot_numbers = set(snapshot_ids.keys())
     redshift_numbers = set(redshifts.keys())
+    legend_numbers = set(legends.keys())
 
     all_numbers = (
         dir_numbers
         | snapshot_numbers
         | redshift_numbers
+        | legend_numbers
     )
 
     for number in sorted(all_numbers):
@@ -463,6 +504,11 @@ def get_snapshots(args):
         if number not in redshift_numbers:
             missing.append(
                 f"--redshift-{number}"
+            )
+
+        if number not in legend_numbers:
+            missing.append(
+                f"--legend-{number}"
             )
 
         if missing:
@@ -504,7 +550,8 @@ def get_snapshots(args):
                 number,
                 halos_dirs[number],
                 snapshot_ids[number],
-                float(redshifts[number])
+                float(redshifts[number]),
+                legends[number]
             )
         )
 
@@ -529,8 +576,8 @@ def redshift_string(redshift):
 
 def plot_hmf(
     hmf_data,
-    volume,
-    bins
+    bins,
+    redshift_for_sheth_tormen
 ):
 
     plt.figure(
@@ -539,6 +586,7 @@ def plot_hmf(
 
     # ---------------------------------------------------------
     # Evaluate Sheth-Tormen over common mass range
+    # at the requested redshift
     # ---------------------------------------------------------
 
     m_eval = np.logspace(
@@ -547,58 +595,58 @@ def plot_hmf(
         400
     )
 
+    st = sheth_tormen_hmf(
+        m_eval,
+        redshift_for_sheth_tormen
+    )
+
     # ---------------------------------------------------------
-    # Plot each Rockstar HMF and corresponding
-    # Sheth-Tormen prediction
+    # Plot each Rockstar HMF
     # ---------------------------------------------------------
 
     for (
         number,
         snapshot_id,
         redshift,
+        legend,
         logM,
         hmf
     ) in hmf_data:
 
-        # Rockstar
         plt.loglog(
             10.0 ** logM,
             hmf,
             marker="o",
             markersize=4,
             linewidth=1.5,
-            label=f"Rockstar, z = {redshift:g}"
+            label=legend
         )
 
-        # Sheth-Tormen
-        st = sheth_tormen_hmf(
-            m_eval,
-            redshift
-        )
+    # ---------------------------------------------------------
+    # Plot Sheth-Tormen only once
+    # ---------------------------------------------------------
 
-        plt.loglog(
-            m_eval,
-            st,
-            linestyle="--",
-            linewidth=2,
-            label=f"Sheth-Tormen, z = {redshift:g}"
-        )
+    plt.loglog(
+        m_eval,
+        st,
+        linestyle="--",
+        linewidth=2,
+        label=f"Sheth-Tormen, z = {redshift_for_sheth_tormen:g}"
+    )
 
     # ---------------------------------------------------------
     # Formatting
     # ---------------------------------------------------------
 
     plt.xlabel(
-        r"Halo mass [$M_\odot/h$]"
+        r"Halo mass [$M_\odot/h$]",
+        fontsize=20
     )
 
     plt.ylabel(
         r"$dn/d\log_{10}M$ "
-        r"[$(h^{-1}{\rm Mpc})^{-3}$]"
-    )
-
-    plt.title(
-        "Halo Mass Function"
+        r"[$(h^{-1}{\rm Mpc})^{-3}$]",
+        fontsize=20
     )
 
     plt.xlim(
@@ -618,7 +666,7 @@ def plot_hmf(
         alpha=0.5
     )
 
-    plt.legend()
+    plt.legend(fontsize=20)
 
     plt.tight_layout()
 
@@ -663,7 +711,14 @@ def main():
         "--box-size",
         type=float,
         required=True,
-        help="Box size in Mpc/h (default: 20)"
+        help="Box size in Mpc/h"
+    )
+
+    parser.add_argument(
+        "--redshift-for-sheth-tormen",
+        type=float,
+        required=True,
+        help="Redshift at which to evaluate the Sheth-Tormen HMF"
     )
 
     # ---------------------------------------------------------
@@ -714,7 +769,8 @@ def main():
         number,
         halos_dir,
         snapshot_id,
-        redshift
+        redshift,
+        legend
     ) in snapshots:
 
         halos, masses = read_halo_snapshot(
@@ -738,6 +794,7 @@ def main():
                 number,
                 snapshot_id,
                 redshift,
+                legend,
                 logM,
                 hmf
             )
@@ -749,8 +806,8 @@ def main():
 
     plot_hmf(
         hmf_data,
-        volume,
-        bins
+        bins,
+        args.redshift_for_sheth_tormen
     )
 
 

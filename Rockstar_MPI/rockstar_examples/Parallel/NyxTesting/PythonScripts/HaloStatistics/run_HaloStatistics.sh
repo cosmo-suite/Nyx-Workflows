@@ -1,8 +1,15 @@
 python3 HaloStatistics.py \
---halos-dir-1=/pscratch/sd/n/nataraj2/Nyx/cosmo-suite/Nyx-Workflows/Rockstar_MPI/rockstar_examples/Parallel/NyxTesting/LCDM/halos \
---halos-dir-2=/pscratch/sd/n/nataraj2/Nyx/cosmo-suite/Nyx-Workflows/Rockstar_MPI/rockstar_examples/Parallel/NyxTesting/WDM/halos \
---snapshot-id-1=16 \
---snapshot-id-2=16 \
---redshift-1=3 \
---redshift-2=3 \
+--halos-dir-1=/pscratch/sd/n/nataraj2/Nyx/cosmo-suite/Nyx-Workflows/Rockstar_MPI/rockstar_examples/Parallel/NyxTesting/LCDM/halos_LCDM \
+--halos-dir-2=/pscratch/sd/n/nataraj2/Nyx/cosmo-suite/Nyx-Workflows/Rockstar_MPI/rockstar_examples/Parallel/NyxTesting/WDM/halos_WDM \
+--halos-dir-3=/pscratch/sd/n/nataraj2/Nyx/cosmo-suite/Nyx-Workflows/Rockstar_MPI/rockstar_examples/Parallel/NyxTesting/FDM/halos_FDM \
+--snapshot-id-1=11 \
+--snapshot-id-2=11 \
+--snapshot-id-3=11 \
+--redshift-1=4.0 \
+--redshift-2=4.0 \
+--redshift-3=4.0 \
+--legend-1="CDM" \
+--legend-2="WDM (m=2.1 keV)" \
+--legend-3="FDM (m=1e-22 eV)" \
+--redshift-for-sheth-tormen=4.0 \
 --box-size=20
