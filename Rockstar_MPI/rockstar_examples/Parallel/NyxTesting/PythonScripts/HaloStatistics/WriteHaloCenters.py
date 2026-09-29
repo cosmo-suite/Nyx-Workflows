@@ -45,30 +45,6 @@ def read_halo_file(filename):
     return halos
 
 
-def is_rockstar_ascii_file(filename):
-    """
-    Check whether a file is an ASCII Rockstar halo catalog.
-    """
-
-    try:
-
-        with open(filename, "r", encoding="ascii") as f:
-
-            for line in f:
-
-                if line.startswith("#id "):
-                    return True
-
-                # Header should occur near the beginning
-                if f.tell() > 10000:
-                    break
-
-    except (UnicodeDecodeError, OSError):
-        return False
-
-    return False
-
-
 def write_vtk(filename, halos):
     """Write halo centers and masses to a legacy ASCII VTK file."""
 
@@ -125,29 +101,39 @@ def main():
     )
 
     parser.add_argument(
+        "--snapshot-id",
+        required=True,
+        help="Snapshot ID used to select halos_<snapshot-id>.*.ascii",
+    )
+
+    parser.add_argument(
         "--output",
-        default="halos.vtk",
-        help="Output VTK filename (default: halos.vtk)",
+        required=True,
+        help="Output VTK filename",
     )
 
     args = parser.parse_args()
 
     # -------------------------------------------------------------
-    # Find all files
+    # Find only files matching:
+    #
+    # halos_<snapshot-id>.*.ascii
     # -------------------------------------------------------------
 
-    files = sorted(
-        f
-        for f in glob.glob(os.path.join(args.halos_dir, "*"))
-        if os.path.isfile(f)
+    pattern = os.path.join(
+        args.halos_dir,
+        f"halos_{args.snapshot_id}.*.ascii"
     )
+
+    files = sorted(glob.glob(pattern))
 
     if not files:
         raise RuntimeError(
-            f"No files found in directory: {args.halos_dir}"
+            f"No files found matching: {pattern}"
         )
 
-    print(f"Found {len(files)} files")
+    print(f"Snapshot ID: {args.snapshot_id}")
+    print(f"Found {len(files)} matching Rockstar files")
 
     # -------------------------------------------------------------
     # Read Rockstar ASCII files
@@ -159,11 +145,6 @@ def main():
 
         basename = os.path.basename(filename)
 
-        if not is_rockstar_ascii_file(filename):
-
-            print(f"Skipping: {basename}")
-            continue
-
         try:
 
             halos = read_halo_file(filename)
@@ -172,7 +153,6 @@ def main():
 
             print(f"Skipping malformed file: {basename}")
             print(f"  Error: {e}")
-
             continue
 
         print(
@@ -191,11 +171,8 @@ def main():
 
     if not all_halos:
         raise RuntimeError(
-            "No Rockstar halos were found."
+            "No Rockstar halos were found in the matching files."
         )
-
-    for x, y, z, mvir in all_halos:
-        print(f"Halo mass = {mvir:.6e} Msun/h")
 
     # -------------------------------------------------------------
     # Write VTK
@@ -208,3 +185,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
