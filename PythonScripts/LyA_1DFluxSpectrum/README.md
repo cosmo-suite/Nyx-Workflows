@@ -24,7 +24,7 @@ The DESI DR1 Ly-$\alpha$ 1D power spectrum baseline FITS file must be downloaded
 You can download the baseline file directly using `wget`:
 
 ```bash
-wget "[https://zenodo.org/records/17100543/files/p1d_fft_y1_measurement_kms_v8_baseline.fits?download=1](https://zenodo.org/records/17100543/files/p1d_fft_y1_measurement_kms_v8_baseline.fits?download=1)" -O p1d_fft_y1_measurement_kms_v8_baseline.fits
+ wget https://zenodo.org/records/17100543/files/zenodo_p1d_fft_y1.zip
 ```
 
 ### 2. Nyx Simulation Data
@@ -38,7 +38,7 @@ Run the script from the command line by specifying the DESI FITS file, target re
 
 ### Command-Line Arguments
 
-* `--desi-data`: Path to the DESI baseline `.fits` file (**Required**).
+* `--desi-data`: Path to the DESI baseline `p1d_fft_y1_measurement_kms_v8_baseline.fits` file (**Required**).
 * `--z-target`: Target redshift to filter, e.g., `2.2` (**Required**).
 * `--output`: Filename for the output plot image, e.g., `plot.png` (**Required**).
 * `--nyx-data-N`: Path to the $N$-th Nyx dataset text file (where $N = 1, 2, 3, \dots$).
