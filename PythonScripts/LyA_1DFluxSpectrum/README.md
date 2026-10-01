@@ -50,7 +50,7 @@ Run the script from the command line by specifying the DESI FITS file, target re
 
 ```bash
 python3 Plot_P1D_comparison_DESI.py \
-    --desi-data=p1d_fft_y1_measurement_kms_v8_baseline.fits \
+    --desi-data=/path/to/p1d_fft_y1_measurement_kms_v8_baseline.fits \
     --nyx-data-1=path/to/p1d_CDM_z_eq_2p2_ave_ps1d.txt \
     --nyx-data-2=path/to/p1d_WDM_2p2.txt_ave_ps1d.txt \
     --nyx-data-3=path/to/p1d_FDM_2p2.txt_ave_ps1d.txt \
