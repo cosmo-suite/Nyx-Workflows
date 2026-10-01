@@ -1,6 +1,6 @@
 # DESI DR1 & Nyx 1D Flux Power Spectrum Comparison
 
-This Python script plots the **DESI Data Release 1 (DR1) Ly-\alpha 1D Flux Power Spectrum** ($P_{\rm 1D}$) against multiple **Nyx** simulation datasets (e.g., CDM, WDM, FDM) at a target redshift ($z$).
+This Python script plots the **DESI Data Release 1 (DR1) Ly-$\alpha$ 1D Flux Power Spectrum** ($P_{\rm 1D}$) against multiple **Nyx** simulation datasets (e.g., CDM, WDM, FDM) at a target redshift ($z$).
 
 ---
 
@@ -17,7 +17,7 @@ pip install numpy matplotlib astropy
 ## Data Preparation
 
 ### 1. DESI Baseline Data
-The DESI DR1 Ly-$\alpha$ 1D power spectrum baseline FITS file must be downloaded from Zenodo. 
+The DESI DR1 Ly- $\alpha$ 1D power spectrum baseline FITS file must be downloaded from Zenodo. 
 
 * **Zenodo Record:** [https://zenodo.org/records/17100543](https://zenodo.org/records/17100543)
 
